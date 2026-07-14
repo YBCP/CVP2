@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REAS CVP — Informe Seguimiento Julio 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --r:#7B0D1E; --rd:#5A0914; --g:#C8952A; --gl:#F0C060;
+  --bk:#0d0d0d; --wh:#ffffff; --lt:#f4f4f4;
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#111;overflow:hidden;}
+.deck{width:100vw;height:100vh;position:relative;}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;opacity:0;transition:opacity .3s;}
+.slide.active{display:flex;opacity:1;}
+
+/* NAV */
+.nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(90,9,20,.8);color:#fff;border:none;
+  width:40px;height:56px;cursor:pointer;z-index:9999;font-size:22px;display:flex;
+  align-items:center;justify-content:center;border-radius:4px;transition:background .2s;}
+.nav:hover{background:var(--g);}
+#prev{left:6px;} #next{right:6px;}
+.dots{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:9999;}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:.2s;}
+.dot.on{background:var(--g);transform:scale(1.4);}
+.ctr{position:fixed;bottom:26px;right:18px;color:rgba(255,255,255,.35);font-size:10px;z-index:9999;letter-spacing:1px;}
+
+/* FOOTER */
+.foot{background:var(--rd);color:rgba(255,255,255,.7);font-size:11px;letter-spacing:.4px;
+  padding:5px 22px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+
+/* HEADER */
+.hdr{background:var(--r);padding:12px 30px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hdr h2{color:#fff;font-size:21px;font-weight:700;letter-spacing:.3px;}
+.hdr .sub{color:rgba(255,255,255,.6);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;}
+
+/* ======================== SLIDE 1 — PORTADA ======================== */
+#s1{background:var(--bk);overflow:hidden;flex-direction:row;}
+.p-left{
+  width:62%;background:var(--r);
+  clip-path:polygon(0 0,100% 0,90% 100%,0 100%);
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+}
+.p-top-band{
+  background:rgba(0,0,0,.45);padding:16px 52px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:relative;z-index:3;
+}
+.p-left::before{
+  content:'';position:absolute;width:320px;height:320px;border-radius:50%;
+  background:rgba(0,0,0,.12);right:-70px;bottom:-70px;
+}
+.p-logos{display:flex;gap:10px;align-items:center;}
+.p-chip{border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:9px;font-weight:700;
+  letter-spacing:1.5px;padding:5px 12px;border-radius:2px;text-transform:uppercase;line-height:1.5;}
+.p-chip.gc{background:var(--g);border-color:var(--g);}
+.p-band-tag{color:rgba(255,255,255,.5);font-size:9px;letter-spacing:2px;text-transform:uppercase;}
+.p-main{
+  flex:1;position:relative;z-index:2;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 52px 0 52px;
+}
+.p-eyebrow{color:rgba(255,255,255,.6);font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:16px;font-weight:500;}
+.p-pre{color:rgba(255,255,255,.9);font-size:22px;font-weight:300;letter-spacing:2px;text-transform:uppercase;
+  margin-bottom:4px;}
+.p-title{color:var(--gl);font-size:66px;font-weight:900;line-height:1;text-transform:uppercase;
+  letter-spacing:-1px;margin-bottom:16px;}
+.p-bar{width:60px;height:4px;background:var(--gl);margin-bottom:16px;}
+.p-sub{color:rgba(255,255,255,.75);font-size:14px;font-weight:300;letter-spacing:.5px;}
+.p-foot-text{
+  padding:10px 52px;background:rgba(0,0,0,.35);
+  color:rgba(255,255,255,.55);font-size:9px;letter-spacing:.5px;
+  display:flex;justify-content:space-between;flex-shrink:0;position:relative;z-index:3;
+}
+.p-right{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  align-items:flex-start;padding:50px 44px 50px 60px;gap:28px;
+}
+.p-year{color:var(--g);font-size:80px;font-weight:900;line-height:1;letter-spacing:-2px;}
+.p-year span{display:block;font-size:11px;color:rgba(255,255,255,.35);font-weight:400;letter-spacing:3px;margin-bottom:4px;}
+.p-items{display:flex;flex-direction:column;gap:16px;}
+.p-item{}
+.p-ilabel{color:rgba(255,255,255,.35);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+.p-ival{color:#fff;font-size:13px;font-weight:600;}
+
+
+/* ===== ESTILOS INFORME REAS JULIO 2026 ===== */
+.body{flex:1;overflow:hidden;display:flex;}
+.hdr-num{font-size:34px;font-weight:900;color:var(--g);line-height:1;margin-right:12px;}
+.hdr-sep{width:2px;height:32px;background:rgba(255,255,255,.25);margin-right:12px;}
+
+/* KPI CARDS */
+.kpi-row{display:flex;gap:12px;}
+.kpi{background:rgba(255,255,255,.06);border-radius:8px;padding:14px 18px;
+  text-align:center;flex:1;border-top:3px solid var(--g);}
+.kpi.red{border-top-color:var(--r);}
+.kpi.gray{border-top-color:#555;}
+.kpi-n{font-size:36px;font-weight:900;color:#fff;line-height:1;}
+.kpi-n.gold{color:var(--g);}
+.kpi-n.red{color:#ef5350;}
+.kpi-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:5px;letter-spacing:.5px;line-height:1.3;}
+
+/* TABLA DARK */
+.tbl-dark{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl-dark th{background:var(--r);color:#fff;padding:9px 12px;text-align:left;font-weight:700;}
+.tbl-dark td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.82);}
+.tbl-dark tr:nth-child(even) td{background:rgba(255,255,255,.04);}
+.tbl-dark tr:hover td{background:rgba(200,149,42,.1);}
+.tbl-dark .total-row td{background:rgba(123,13,30,.4);font-weight:700;color:#fff;}
+
+/* TABLA LIGHT */
+.tbl-light{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl-light th{background:var(--r);color:#fff;padding:9px 12px;text-align:left;font-weight:700;}
+.tbl-light td{padding:8px 12px;border-bottom:1px solid #eee;color:#333;}
+.tbl-light tr:nth-child(even) td{background:#fafafa;}
+.tbl-light tr:hover td{background:#fff8f0;}
+.tbl-light .total-row td{background:#fdf0f0;font-weight:700;color:var(--r);}
+
+/* SLIDE 2 — DEPURACIÓN */
+#s2{background:var(--bk);}
+#s2 .body{flex-direction:column;padding:16px 24px;gap:14px;}
+.bloques{display:flex;gap:12px;flex:0 0 auto;}
+.bloque{flex:1;border-radius:8px;padding:16px 18px;border-left:5px solid;}
+.bloque.a{background:rgba(46,125,50,.12);border-color:#4caf50;}
+.bloque.b{background:rgba(200,149,42,.1);border-color:var(--g);}
+.bloque.c{background:rgba(123,13,30,.15);border-color:var(--r);}
+.bloque-tag{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.bloque.a .bloque-tag{color:#66bb6a;}
+.bloque.b .bloque-tag{color:var(--g);}
+.bloque.c .bloque-tag{color:#ef5350;}
+.bloque-n{font-size:40px;font-weight:900;color:#fff;line-height:1;margin-bottom:4px;}
+.bloque-title{font-size:15px;font-weight:700;color:rgba(255,255,255,.85);margin-bottom:4px;}
+.bloque-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.45;}
+.bloque-items{margin-top:8px;display:flex;flex-direction:column;gap:4px;}
+.bloque-item{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7);}
+.bloque-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.depuracion-bottom{flex:1;display:flex;gap:16px;min-height:0;}
+.dep-chart-box{flex:1;background:rgba(255,255,255,.04);border-radius:8px;padding:14px;
+  display:flex;flex-direction:column;position:relative;}
+.dep-chart-title{font-size:14px;font-weight:700;color:var(--g);margin-bottom:8px;}
+.dep-chart{flex:1;position:relative;min-height:0;}
+.dep-legend{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.dep-leg-row{display:flex;align-items:center;gap:8px;}
+.dep-leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.dep-leg-lbl{font-size:13px;color:rgba(255,255,255,.7);flex:1;}
+.dep-leg-num{font-size:13px;font-weight:800;color:#fff;}
+.dep-leg-pct{font-size:10px;color:rgba(255,255,255,.4);}
+.dep-total-box{background:rgba(200,149,42,.1);border-radius:8px;padding:12px 16px;
+  text-align:center;flex-shrink:0;}
+.dep-total-n{font-size:40px;font-weight:900;color:var(--g);line-height:1;}
+.dep-total-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:4px;letter-spacing:.5px;}
+
+/* SLIDE 3 — ESTRATEGIA EN PROCESO */
+#s3{background:#111;}
+#s3 .body{flex-direction:column;padding:16px 24px;gap:12px;}
+.ep-sub{display:flex;gap:12px;flex-shrink:0;}
+.ep-card{flex:1;border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.ep-card.pot{background:rgba(46,125,50,.15);border:1px solid rgba(76,175,80,.3);}
+.ep-card.ini{background:rgba(123,13,30,.15);border:1px solid rgba(123,13,30,.4);}
+.ep-card.no{background:rgba(117,117,117,.15);border:1px solid rgba(117,117,117,.3);}
+.ep-card.ret{background:rgba(200,149,42,.12);border:1px solid rgba(200,149,42,.3);}
+.ep-card-n{font-size:32px;font-weight:900;line-height:1;flex-shrink:0;}
+.ep-card.pot .ep-card-n{color:#66bb6a;}
+.ep-card.ini .ep-card-n{color:#ef5350;}
+.ep-card.no .ep-card-n{color:#aaa;}
+.ep-card.ret .ep-card-n{color:var(--g);}
+.ep-card-txt{}
+.ep-card-lbl{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:rgba(255,255,255,.5);}
+.ep-card-desc{font-size:14px;color:rgba(255,255,255,.8);margin-top:3px;}
+.ep-zmpa{display:flex;gap:12px;flex-shrink:0;}
+.ep-zmpa-card{flex:1;background:rgba(200,149,42,.1);border-radius:8px;padding:14px 18px;
+  border-left:4px solid var(--g);}
+.ep-zmpa-n{font-size:38px;font-weight:900;color:var(--g);line-height:1;}
+.ep-zmpa-lbl{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;line-height:1.4;}
+.ep-table-wrap{flex:1;background:rgba(255,255,255,.03);border-radius:8px;padding:14px;min-height:0;overflow:auto;}
+.ep-table-title{font-size:14px;font-weight:700;color:var(--g);margin-bottom:10px;}
+
+/* SLIDE 4 — AST BÚSQUEDA */
+#s4{background:#111;}
+#s4 .body{flex-direction:column;padding:16px 24px;gap:14px;}
+.ast-kpis{display:flex;gap:12px;flex-shrink:0;}
+.ast-kpi{flex:1;background:rgba(255,255,255,.05);border-radius:8px;padding:14px 16px;
+  text-align:center;position:relative;overflow:hidden;}
+.ast-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.ast-kpi.k1::before{background:#4caf50;}
+.ast-kpi.k2::before{background:var(--g);}
+.ast-kpi.k3::before{background:var(--r);}
+.ast-kpi.k4::before{background:#9c27b0;}
+.ast-kpi-n{font-size:38px;font-weight:900;color:#fff;line-height:1;}
+.ast-kpi.k1 .ast-kpi-n{color:#66bb6a;}
+.ast-kpi.k2 .ast-kpi-n{color:var(--g);}
+.ast-kpi.k3 .ast-kpi-n{color:#ef5350;}
+.ast-kpi.k4 .ast-kpi-n{color:#ce93d8;}
+.ast-kpi-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:5px;letter-spacing:.3px;line-height:1.3;}
+.ast-tabla-wrap{flex:1;background:rgba(255,255,255,.03);border-radius:8px;padding:14px;overflow:auto;min-height:0;}
+.ast-tabla-title{font-size:12px;font-weight:700;color:var(--g);margin-bottom:10px;}
+
+/* SLIDE 5 — AST ESTADO */
+#s5{background:var(--bk);}
+#s5 .body{flex-direction:column;padding:16px 24px;gap:14px;background:var(--bk);}
+.ast-e-top{display:flex;gap:14px;flex-shrink:0;}
+.ast-e-kpi{flex:1;background:#fff;border-radius:8px;padding:14px 18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);text-align:center;border-top:4px solid;}
+.ast-e-kpi.main{border-top-color:var(--r);flex:2;}
+.ast-e-kpi.k2{border-top-color:#4caf50;}
+.ast-e-kpi.k3{border-top-color:var(--g);}
+.ast-e-kpi.k4{border-top-color:#ef5350;}
+.ast-e-n{font-size:40px;font-weight:900;color:#222;line-height:1;}
+.ast-e-kpi.main .ast-e-n{font-size:52px;color:var(--r);}
+.ast-e-kpi.k2 .ast-e-n{color:#2e7d32;}
+.ast-e-n-sub{font-size:12px;font-weight:700;color:#888;margin-top:2px;}
+.ast-e-lbl{font-size:12px;color:#888;margin-top:4px;line-height:1.3;}
+.ast-e-bottom{flex:1;display:flex;gap:14px;min-height:0;}
+.ast-e-desglose{flex:1;background:#161616;border-radius:10px;padding:18px;border:1px solid rgba(255,255,255,.06);}
+.ast-e-title{font-size:15px;font-weight:700;color:var(--gl);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px;}
+.ast-e-items{display:flex;flex-direction:column;gap:6px;}
+.ast-e-item{display:flex;align-items:center;gap:16px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.04);border-left:3px solid transparent;}
+.ast-e-item-n{font-size:38px;font-weight:900;width:54px;text-align:center;flex-shrink:0;line-height:1;}
+.ast-e-item-txt{font-size:15px;color:rgba(255,255,255,.82);flex:1;line-height:1.3;}
+.ast-e-item-note{font-size:13px;color:rgba(255,255,255,.4);font-style:normal;margin-top:2px;}
+.ast-e-meses{flex:1;background:#161616;border-radius:10px;padding:16px;border:1px solid rgba(255,255,255,.06);
+  display:flex;flex-direction:column;}
+.ast-e-chart{flex:1;position:relative;min-height:0;}
+.prog-bar-wrap{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.prog-bar-row{display:flex;align-items:center;gap:10px;}
+.prog-bar-lbl{font-size:11px;color:#555;width:60px;flex-shrink:0;}
+.prog-bar-bg{flex:1;height:20px;background:#f0f0f0;border-radius:3px;overflow:hidden;}
+.prog-bar-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:8px;
+  font-size:10px;font-weight:700;color:#fff;white-space:nowrap;}
+.prog-bar-val{font-size:13px;font-weight:800;color:#222;width:30px;text-align:right;flex-shrink:0;}
+
+/* SLIDE 6 — CASOS ESPECIALES */
+#s6{background:var(--bk);}
+#s6 .body{flex-direction:column;padding:20px 28px;gap:14px;}
+.casos-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;}
+.caso-card{border-radius:10px;padding:22px 24px;display:flex;gap:18px;align-items:flex-start;}
+.caso-card.c1{background:rgba(123,13,30,.2);border:1px solid rgba(123,13,30,.4);}
+.caso-card.c2{background:rgba(200,149,42,.1);border:1px solid rgba(200,149,42,.3);}
+.caso-card.c3{background:rgba(46,125,50,.12);border:1px solid rgba(76,175,80,.3);}
+.caso-card.c4{background:rgba(117,117,117,.12);border:1px solid rgba(117,117,117,.3);}
+.caso-n{font-size:52px;font-weight:900;line-height:1;flex-shrink:0;width:70px;text-align:center;}
+.caso-card.c1 .caso-n{color:#ef5350;}
+.caso-card.c2 .caso-n{color:var(--g);}
+.caso-card.c3 .caso-n{color:#66bb6a;}
+.caso-card.c4 .caso-n{color:#aaa;}
+.caso-info{}
+.caso-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:6px;}
+.caso-desc{font-size:14px;color:rgba(255,255,255,.65);line-height:1.55;}
+
+/* SLIDE 7 — FINANCIERO */
+#s7{background:var(--bk);}
+#s7 .body{flex-direction:column;padding:16px 24px;gap:14px;}
+.fin-top{display:flex;gap:12px;flex-shrink:0;}
+.fin-kpi{flex:1;border-radius:8px;padding:16px 18px;text-align:center;}
+.fin-kpi.f1{background:rgba(123,13,30,.2);border:1px solid rgba(123,13,30,.4);}
+.fin-kpi.f2{background:rgba(200,149,42,.12);border:1px solid rgba(200,149,42,.3);}
+.fin-kpi.f3{background:rgba(46,125,50,.12);border:1px solid rgba(76,175,80,.3);}
+.fin-n{font-size:44px;font-weight:900;line-height:1;}
+.fin-kpi.f1 .fin-n{color:#ef5350;}
+.fin-kpi.f2 .fin-n{color:var(--g);}
+.fin-kpi.f3 .fin-n{color:#66bb6a;}
+.fin-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:5px;letter-spacing:.5px;line-height:1.4;}
+.fin-bottom{flex:1;display:flex;gap:14px;min-height:0;}
+.fin-box{flex:1;background:rgba(255,255,255,.04);border-radius:8px;padding:16px;}
+.fin-box-title{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--g);margin-bottom:12px;}
+.fin-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
+  border-radius:6px;margin-bottom:6px;}
+.fin-row.dark{background:rgba(255,255,255,.06);}
+.fin-row-lbl{font-size:14px;color:rgba(255,255,255,.7);}
+.fin-row-val{font-size:18px;font-weight:800;color:#fff;}
+.fin-row-val.gold{color:var(--g);}
+.fin-row-val.red{color:#ef5350;}
+.fin-note{font-size:12px;color:rgba(255,255,255,.35);margin-top:8px;line-height:1.5;
+  border-top:1px solid rgba(255,255,255,.08);padding-top:8px;}
+
+/* SLIDE 8 — OFERTA VIVIENDA */
+#s8{background:var(--bk);}
+#s8 .body{flex-direction:column;padding:16px 24px;gap:14px;background:var(--bk);}
+.oferta-top{display:flex;gap:14px;flex-shrink:0;align-items:stretch;}
+.oferta-ppto{background:var(--r);border-radius:8px;padding:16px 22px;text-align:center;}
+.oferta-ppto-lbl{font-size:12px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.7);text-transform:uppercase;}
+.oferta-ppto-n{font-size:26px;font-weight:900;color:var(--gl);line-height:1.2;margin-top:4px;}
+.oferta-inventario{flex:1;background:#fff;border-radius:8px;padding:14px 18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);display:flex;gap:14px;}
+.oferta-inv-col{flex:1;}
+.oferta-inv-title{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--r);margin-bottom:6px;}
+.oferta-inv-item{font-size:14px;color:#444;line-height:1.6;}
+.oferta-table-wrap{flex:1;overflow:auto;min-height:0;}
+
+/* SLIDE 9 — PENDIENTES */
+#s9{background:var(--bk);}
+#s9 .body{flex-direction:column;padding:16px 24px;gap:14px;background:var(--bk);}
+.pend-table-wrap{flex:1;overflow:auto;min-height:0;}
+
+/* SLIDE 10 — DEMANDA */
+#s10{background:var(--bk);}
+#s10 .body{flex-direction:row;gap:0;}
+.dem-left{width:42%;background:rgba(255,255,255,.04);padding:20px 22px;
+  display:flex;flex-direction:column;gap:16px;border-right:1px solid rgba(255,255,255,.07);}
+.dem-right{flex:1;padding:20px 22px;display:flex;flex-direction:column;gap:12px;}
+.dem-section-title{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g);margin-bottom:8px;}
+.dem-fuente{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:6px;
+  background:rgba(255,255,255,.05);margin-bottom:6px;}
+.dem-fuente-icon{font-size:18px;flex-shrink:0;}
+.dem-fuente-txt{font-size:14px;color:rgba(255,255,255,.75);line-height:1.45;}
+.verif-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.verif-item{background:rgba(123,13,30,.15);border-radius:6px;padding:10px 12px;border-left:3px solid var(--r);}
+.verif-title{font-size:12px;font-weight:800;color:var(--g);letter-spacing:.5px;margin-bottom:3px;}
+.verif-desc{font-size:13px;color:rgba(255,255,255,.65);line-height:1.4;}
+.dem-result{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;
+  background:rgba(255,255,255,.05);margin-bottom:6px;}
+.dem-result-n{font-size:30px;font-weight:900;line-height:1;flex-shrink:0;width:50px;text-align:center;}
+.dem-result-n.gold{color:var(--g);}
+.dem-result-n.green{color:#66bb6a;}
+.dem-result-n.red{color:#ef5350;}
+.dem-result-txt{font-size:14px;color:rgba(255,255,255,.75);line-height:1.45;flex:1;}
+.dem-result-sub{font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;}
+
+/* SLIDE 11 — CRONOGRAMA */
+#s11{background:var(--bk);}
+#s11 .body{flex-direction:column;padding:20px 28px;gap:18px;}
+.crono-header{display:flex;gap:0;margin-bottom:4px;}
+.crono-mes{flex:1;text-align:center;font-size:13px;font-weight:700;letter-spacing:.5px;
+  color:rgba(255,255,255,.5);padding:6px 0;border-bottom:2px solid rgba(255,255,255,.1);}
+.crono-mes.cur{color:var(--g);border-bottom-color:var(--g);}
+.crono-hito{display:flex;align-items:center;gap:12px;margin-bottom:10px;position:relative;}
+.crono-lbl{font-size:14px;color:rgba(255,255,255,.8);width:220px;flex-shrink:0;text-align:right;line-height:1.3;}
+.crono-track{flex:1;position:relative;height:28px;}
+.crono-bar{position:absolute;height:24px;top:2px;border-radius:4px;
+  display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:700;color:#fff;
+  white-space:nowrap;}
+.crono-riesgo{margin-top:8px;background:rgba(200,149,42,.1);border-radius:6px;
+  padding:10px 14px;border-left:3px solid var(--g);font-size:13px;color:rgba(255,255,255,.65);line-height:1.5;}
+.crono-riesgo b{color:var(--g);}
+
+/* SLIDE 12 — HUERTAS */
+#s12{background:var(--bk);}
+#s12 .body{flex-direction:row;gap:0;}
+.huertas-left{flex:1;padding:24px 28px;display:flex;flex-direction:column;gap:16px;
+  border-right:1px solid rgba(255,255,255,.07);}
+.huertas-right{flex:1;padding:24px 28px;display:flex;flex-direction:column;gap:14px;}
+.huertas-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(46,125,50,.2);
+  border:1px solid rgba(76,175,80,.3);border-radius:20px;padding:5px 14px;margin-bottom:4px;}
+.huertas-badge-icon{font-size:16px;}
+.huertas-badge-txt{font-size:13px;font-weight:700;color:#66bb6a;letter-spacing:.5px;}
+.huertas-piloto{background:rgba(46,125,50,.1);border-radius:8px;padding:16px 18px;
+  border-left:4px solid #4caf50;}
+.huertas-piloto-title{font-size:15px;font-weight:700;color:#66bb6a;margin-bottom:8px;}
+.huertas-piloto-items{display:flex;flex-direction:column;gap:6px;}
+.huertas-piloto-item{display:flex;align-items:flex-start;gap:8px;font-size:14px;color:rgba(255,255,255,.75);}
+.huertas-piloto-dot{width:6px;height:6px;border-radius:50%;background:#4caf50;flex-shrink:0;margin-top:4px;}
+.huertas-evento{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:6px;
+  background:rgba(255,255,255,.04);border-left:3px solid var(--g);}
+.huertas-fecha{font-size:12px;font-weight:800;color:var(--g);letter-spacing:.5px;margin-bottom:3px;white-space:nowrap;}
+.huertas-evento-txt{font-size:14px;color:rgba(255,255,255,.72);line-height:1.5;}
+.huertas-resultado{background:rgba(200,149,42,.1);border-radius:8px;padding:14px 16px;
+  border-left:4px solid var(--g);}
+.huertas-resultado-title{font-size:13px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.huertas-resultado-txt{font-size:14px;color:rgba(255,255,255,.75);line-height:1.55;}
+
+/* PORTADA */
+#s1{background:var(--bk);overflow:hidden;flex-direction:row;}
+
+
+
+/* SLIDE 13 — ENTREGADO 2026 */
+#mapOrigen{width:100%;height:100%;border-radius:8px;}
+.proj-chart-wrap{display:flex;flex-direction:column;gap:0;flex:1;justify-content:center;}
+.proj-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.proj-bar-lbl{font-size:13px;color:rgba(255,255,255,.75);width:180px;flex-shrink:0;text-align:right;line-height:1.3;}
+.proj-bar-track{flex:1;height:28px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;position:relative;}
+.proj-bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:13px;font-weight:800;color:#fff;}
+
+/* ===== REDISEÑO SLIDES FONDO NEGRO ===== */
+
+/* s4 — AST BÚSQUEDA: tarjetas KPI grandes + tabla mejorada */
+#s4 .body{flex-direction:column;padding:20px 28px;gap:18px;background:var(--bk);}
+.ast-kpi-big-row{display:flex;gap:14px;flex-shrink:0;}
+.ast-kpi-big{flex:1;border-radius:10px;padding:22px 18px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;}
+.ast-kpi-big.k1{background:linear-gradient(135deg,rgba(46,125,50,.25),rgba(46,125,50,.08));border:1px solid rgba(76,175,80,.35);}
+.ast-kpi-big.k2{background:linear-gradient(135deg,rgba(200,149,42,.2),rgba(200,149,42,.06));border:1px solid rgba(200,149,42,.35);}
+.ast-kpi-big.k3{background:linear-gradient(135deg,rgba(123,13,30,.25),rgba(123,13,30,.08));border:1px solid rgba(200,0,0,.3);}
+.ast-kpi-big.k4{background:linear-gradient(135deg,rgba(156,39,176,.2),rgba(156,39,176,.06));border:1px solid rgba(206,147,216,.3);}
+.ast-kpi-big-n{font-size:58px;font-weight:900;line-height:1;margin-bottom:6px;}
+.ast-kpi-big.k1 .ast-kpi-big-n{color:#66bb6a;}
+.ast-kpi-big.k2 .ast-kpi-big-n{color:var(--g);}
+.ast-kpi-big.k3 .ast-kpi-big-n{color:#ef5350;}
+.ast-kpi-big.k4 .ast-kpi-big-n{color:#ce93d8;}
+.ast-kpi-big-lbl{font-size:15px;font-weight:600;color:rgba(255,255,255,.7);line-height:1.3;}
+.ast-tabla-dark-wrap{flex:1;background:rgba(255,255,255,.04);border-radius:10px;padding:18px;
+  overflow:auto;min-height:0;display:flex;flex-direction:column;}
+.ast-tabla-dark-title{font-size:15px;font-weight:700;color:var(--g);margin-bottom:12px;letter-spacing:.3px;}
+.tbl-inf{width:100%;border-collapse:collapse;}
+.tbl-inf th{background:var(--r);color:#fff;padding:12px 18px;text-align:left;font-weight:700;font-size:14px;}
+.tbl-inf td{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.85);font-size:14px;}
+.tbl-inf tr:nth-child(even) td{background:rgba(255,255,255,.04);}
+.tbl-inf tr:hover td{background:rgba(200,149,42,.12);}
+.tbl-inf .total-row td{background:rgba(123,13,30,.35);font-weight:700;color:#fff;font-size:15px;}
+
+/* s5 — AST ESTADO: fondo negro */
+#s5 .body{background:var(--bk)!important;}
+.ast-e-kpi{background:#1a1a1a!important;box-shadow:none!important;}
+.ast-e-kpi.main{border-top-color:var(--r);}
+.ast-e-n{color:#fff!important;}
+.ast-e-kpi.main .ast-e-n{color:#ef5350!important;}
+.ast-e-kpi.k2 .ast-e-n{color:#66bb6a!important;}
+.ast-e-n-sub{color:rgba(255,255,255,.5)!important;}
+.ast-e-lbl{color:rgba(255,255,255,.45)!important;}
+.ast-e-desglose{background:#1a1a1a!important;box-shadow:none!important;}
+.ast-e-item{background:rgba(255,255,255,.06)!important;}
+.ast-e-item-txt{color:rgba(255,255,255,.82)!important;}
+.ast-e-item-note{color:rgba(255,255,255,.35)!important;}
+.ast-e-meses{background:#1a1a1a!important;box-shadow:none!important;}
+.prog-bar-bg{background:rgba(255,255,255,.1)!important;}
+.prog-bar-lbl{color:rgba(255,255,255,.65)!important;}
+.prog-bar-val{color:#fff!important;}
+.prog-bar-val.red-v{color:#ef5350!important;}
+.ast-e-title{color:var(--g)!important;}
+
+/* s8 — OFERTA VIVIENDA: fondo negro */
+#s8 .body{background:var(--bk)!important;}
+.oferta-inventario{background:#1a1a1a!important;box-shadow:none!important;}
+.oferta-inv-title{color:var(--g)!important;}
+.oferta-inv-item{color:rgba(255,255,255,.75)!important;}
+.oferta-inv-item b{color:#fff!important;}
+.tbl-light{color:rgba(255,255,255,.85);}
+.tbl-light th{background:var(--r);color:#fff;}
+.tbl-light td{border-bottom:1px solid rgba(255,255,255,.07);color:rgba(255,255,255,.82);background:transparent;}
+.tbl-light tr:nth-child(even) td{background:rgba(255,255,255,.04);}
+.tbl-light tr:hover td{background:rgba(200,149,42,.12);}
+.tbl-light .total-row td{background:rgba(123,13,30,.35);color:#fff;}
+.oferta-table-wrap{background:rgba(255,255,255,.04);border-radius:10px;padding:14px;}
+
+/* s9 — PENDIENTES: fondo negro */
+#s9 .body{background:var(--bk)!important;}
+.pend-table-wrap{background:rgba(255,255,255,.04);border-radius:10px;padding:14px;}
+
+.loc-tip{background:rgba(13,13,13,.9)!important;border:1px solid rgba(255,255,255,.15)!important;color:#fff!important;font-size:12px!important;padding:4px 8px!important;border-radius:4px!important;box-shadow:none!important;}
+.loc-tip::before{display:none!important;}
+
+.leaflet-control-zoom a{background:#1a1a1a!important;color:#fff!important;border-color:rgba(255,255,255,.2)!important;font-size:18px!important;}
+.leaflet-control-zoom a:hover{background:#333!important;}
+.leaflet-container{background:#0d0d0d!important;}
+/* ===== TAMAÑOS GLOBALES PRESENTACIÓN ===== */
+body{font-size:17px;}
+.hdr h2{font-size:26px!important;letter-spacing:-.3px;}
+.hdr .sub{font-size:15px!important;}
+.hdr-num{font-size:40px!important;}
+.foot{font-size:13px!important;}
+.foot span{font-size:13px!important;}
+/* Tablas */
+.tbl-inf th{font-size:16px!important;padding:14px 18px!important;}
+.tbl-inf td{font-size:15px!important;padding:13px 18px!important;}
+.tbl-dark th,.tbl-dark td{font-size:15px!important;padding:13px 18px!important;}
+/* Bloques depuración */
+.bloque-n{font-size:52px!important;font-weight:900!important;}
+.bloque-title{font-size:17px!important;}
+.bloque-desc{font-size:15px!important;}
+.bloque-tag{font-size:13px!important;}
+.bloque-item{font-size:14px!important;}
+/* AST */
+.ast-e-n{font-size:58px!important;font-weight:900!important;}
+.ast-e-n-sub{font-size:16px!important;}
+.ast-e-lbl{font-size:15px!important;}
+.ast-e-title{font-size:16px!important;}
+.ast-kpi-big-n{font-size:68px!important;font-weight:900!important;}
+.ast-kpi-big-lbl{font-size:17px!important;}
+/* Desglose familias */
+.ast-e-item-n{font-size:36px!important;width:50px!important;}
+.ast-e-item-txt{font-size:16px!important;}
+.ast-e-item-note{font-size:14px!important;}
+.ast-e-item{padding:12px 16px!important;gap:16px!important;}
+/* EP cards */
+.ep-card-n{font-size:46px!important;font-weight:900!important;}
+.ep-card-lbl{font-size:15px!important;}
+.ep-card-desc{font-size:15px!important;}
+.ep-zmpa-n{font-size:36px!important;}
+.ep-zmpa-lbl{font-size:15px!important;}
+/* Casos */
+.caso-title{font-size:20px!important;}
+.caso-desc{font-size:15px!important;}
+.caso-n{font-size:52px!important;}
+/* Cronograma */
+.crono-lbl{font-size:16px!important;width:240px!important;}
+.crono-mes{font-size:15px!important;}
+.crono-bar{font-size:13px!important;}
+.crono-riesgo{font-size:15px!important;}
+/* Financiero */
+.fin-box-title{font-size:14px!important;}
+.fin-row-lbl{font-size:16px!important;}
+.fin-row-val{font-size:22px!important;}
+/* Oferta */
+.oferta-ppto-lbl{font-size:14px!important;}
+.oferta-ppto-n{font-size:30px!important;}
+.oferta-inv-item{font-size:16px!important;}
+/* Demanda */
+.dem-result-txt{font-size:16px!important;}
+.dem-result-sub{font-size:14px!important;}
+.dem-result-n{font-size:38px!important;}
+.verif-title{font-size:14px!important;}
+.verif-desc{font-size:14px!important;}
+.dem-fuente-txt{font-size:16px!important;}
+/* Huertas */
+.huertas-piloto-title{font-size:18px!important;}
+.huertas-piloto-item{font-size:16px!important;}
+.huertas-evento-txt{font-size:16px!important;}
+.huertas-fecha{font-size:14px!important;}
+.huertas-resultado-txt{font-size:16px!important;}
+.huertas-resultado-title{font-size:14px!important;}
+/* Portada */
+.p-ival{font-size:22px!important;}
+.p-ilabel{font-size:14px!important;}
+.p-title{font-size:72px!important;}
+.p-sub{font-size:18px!important;}
+.p-eyebrow{font-size:14px!important;}
+/* Cronograma nuevo */
+.crono2-mes{font-size:16px!important;font-weight:800!important;}
+.crono2-lbl{font-size:17px!important;}
+.crono2-note{font-size:14px!important;}
+
+/* Gantt interactivo */
+.g-row{display:flex;align-items:center;min-height:52px;gap:0;}
+.g-lbl{width:250px;flex-shrink:0;font-size:17px;font-weight:600;color:#fff;text-align:right;padding-right:20px;line-height:1.3;}
+.g-track{flex:1;position:relative;height:42px;}
+.g-bar{position:absolute;height:100%;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;letter-spacing:.5px;cursor:pointer;transition:filter .2s,transform .2s;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+.g-bar:hover{filter:brightness(1.25);transform:scaleY(1.08);z-index:2;}
+.g-bar::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(13,13,13,.95);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .18s;border:1px solid rgba(255,255,255,.15);z-index:10;}
+.g-bar:hover::after{opacity:1;}
+</style>
+</head>
+<body>
+<div class="deck">
+<div class="slide active" id="s1">
+  <div class="p-left">
+    <div class="p-top-band">
+      <div class="p-logos">
+        <div class="p-chip gc">CVP</div>
+        <div class="p-chip">REAS</div>
+      </div>
+      <div class="p-band-tag">Caja de Vivienda Popular · Bogotá D.C.</div>
+    </div>
+    <div class="p-main">
+      <div class="p-eyebrow">Dirección de Reasentamientos</div>
+      <div class="p-pre">Seguimiento y</div>
+      <div class="p-title">Avances</div>
+      <div class="p-bar"></div>
+      <div class="p-sub">Corte: 9 de julio de 2026</div>
+    </div>
+    <div class="p-foot-text">
+      <span>Informe mensual — Julio 2026</span>
+      <span>Concejo Distrital · Bogotá D.C.</span>
+    </div>
+  </div>
+  <div class="p-right">
+    <div class="p-year"><span>Julio</span>2026</div>
+    <div class="p-items">
+      <div class="p-item">
+        <div class="p-ilabel">Total expedientes</div>
+        <div class="p-ival">36.327</div>
+      </div>
+      <div class="p-item">
+        <div class="p-ilabel">Hogares reasentados 2026</div>
+        <div class="p-ival">229</div>
+      </div>
+      <div class="p-item">
+        <div class="p-ilabel">Entregados AST</div>
+        <div class="p-ival">291 / 348 (84%)</div>
+      </div>
+      <div class="p-item">
+        <div class="p-ilabel">En proceso de depuración</div>
+        <div class="p-ival">5.349</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE AST — COMBINADO ===== -->
+<div class="slide" id="s4m">
+  <div class="hdr">
+    <h2>Arboleda Santa Teresita</h2>
+    <span class="sub">Estado del proyecto y familias pendientes · Corte: 9 julio 2026</span>
+  </div>
+  <div class="body" style="flex-direction:row;gap:14px;padding:14px 20px;background:var(--bk);">
+
+    <!-- Columna izquierda: tabla + desglose -->
+    <div style="flex:1.15;display:flex;flex-direction:column;gap:10px;min-height:0;">
+
+      <!-- Tabla Alpes / M+D / Olga -->
+      <div>
+        <div class="ast-tabla-dark-title" style="font-size:15px;margin-bottom:8px;">Estado por proyecto — Alpes · M+D · Olga</div>
+        <table class="tbl-inf" style="width:100%;">
+          <thead>
+            <tr>
+              <th style="font-size:15px;padding:10px 14px;">Proyecto</th>
+              <th style="font-size:15px;padding:10px 14px;text-align:center;">Hogares</th>
+              <th style="font-size:15px;padding:10px 14px;text-align:center;">Aprobados</th>
+              <th style="font-size:15px;padding:10px 14px;text-align:center;">Relocalización</th>
+              <th style="font-size:15px;padding:10px 14px;text-align:center;">Hábitat</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-size:16px;font-weight:700;padding:10px 14px;">Alpes</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#fff;padding:10px 14px;">117</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:var(--g);padding:10px 14px;">30</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#64b5f6;padding:10px 14px;">30</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#ce93d8;padding:10px 14px;">4</td>
+            </tr>
+            <tr>
+              <td style="font-size:16px;font-weight:700;padding:10px 14px;">M+D</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#fff;padding:10px 14px;">58</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:var(--g);padding:10px 14px;">36</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#64b5f6;padding:10px 14px;">35</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#ce93d8;padding:10px 14px;">23</td>
+            </tr>
+            <tr>
+              <td style="font-size:16px;font-weight:700;padding:10px 14px;">Olga</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#fff;padding:10px 14px;">78</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:var(--g);padding:10px 14px;">23</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:rgba(255,255,255,.3);padding:10px 14px;">—</td>
+              <td style="font-size:20px;font-weight:800;text-align:center;color:#ce93d8;padding:10px 14px;">13</td>
+            </tr>
+            <tr style="background:rgba(123,13,30,.4);border-top:2px solid var(--r);">
+              <td style="font-size:17px;font-weight:900;color:#fff;padding:12px 14px;">TOTAL</td>
+              <td style="font-size:26px;font-weight:900;text-align:center;color:#fff;padding:12px 14px;">253</td>
+              <td style="font-size:26px;font-weight:900;text-align:center;color:var(--g);padding:12px 14px;">89</td>
+              <td style="font-size:26px;font-weight:900;text-align:center;color:#64b5f6;padding:12px 14px;">65</td>
+              <td style="font-size:26px;font-weight:900;text-align:center;color:#ce93d8;padding:12px 14px;">40</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Desglose 57 familias (debajo de la tabla) -->
+      <div class="ast-e-desglose" style="flex:1;min-height:0;">
+        <div class="ast-e-title" style="font-size:15px;">Desglose de 57 familias pendientes</div>
+        <div class="ast-e-items" style="gap:6px;">
+          <div class="ast-e-item" style="border-left-color:var(--r);padding:7px 12px;"><div class="ast-e-item-n" style="color:var(--r);font-size:28px;">20</div><div><div class="ast-e-item-txt">Pendientes de entrega</div><div class="ast-e-item-note">11 enviadas a registro</div></div></div>
+          <div class="ast-e-item" style="border-left-color:#888;padding:7px 12px;"><div class="ast-e-item-n" style="color:#999;font-size:28px;">8</div><div><div class="ast-e-item-txt">Devueltas por SDTH</div><div class="ast-e-item-note">Cruce en apto sorteado</div></div></div>
+          <div class="ast-e-item" style="border-left-color:#9c27b0;padding:7px 12px;"><div class="ast-e-item-n" style="color:#ce93d8;font-size:28px;">5</div><div><div class="ast-e-item-txt">Pendiente trámite jurídico</div><div class="ast-e-item-note">4 PAR + 1 caso 100% CVP</div></div></div>
+          <div class="ast-e-item" style="border-left-color:var(--g);padding:7px 12px;"><div class="ast-e-item-n" style="color:var(--g);font-size:28px;">22</div><div><div class="ast-e-item-txt">Saneamiento pendiente</div><div class="ast-e-item-note">11 saneamiento SP · 11 en control de legalidad con resolución de renuencia</div></div></div>
+          <div class="ast-e-item" style="border-left-color:#555;padding:7px 12px;"><div class="ast-e-item-n" style="color:#888;font-size:28px;">2</div><div><div class="ast-e-item-txt">Renunciaron</div><div class="ast-e-item-note">Durante el saneamiento</div></div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Columna derecha: KPIs + gráfico -->
+    <div style="flex:0.75;display:flex;flex-direction:column;gap:10px;border-left:1px solid rgba(255,255,255,.07);padding-left:16px;">
+
+      <!-- KPI 291 grande -->
+      <div style="text-align:center;padding:14px 12px;background:rgba(123,13,30,.15);border-radius:10px;border:1px solid rgba(123,13,30,.35);">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;">Aptos entregados</div>
+        <div style="font-size:56px;font-weight:900;color:#fff;line-height:1;letter-spacing:-2px;">291</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:2px;">de 348 · <span style="color:var(--r);font-weight:700;">84%</span></div>
+      </div>
+
+      <!-- KPIs 150 y 57 -->
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;text-align:center;padding:12px 8px;background:rgba(46,125,50,.12);border-radius:10px;border:1px solid rgba(76,175,80,.3);">
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Habitados</div>
+          <div style="font-size:42px;font-weight:900;color:#66bb6a;line-height:1;">150</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;">Apartamentos</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:12px 8px;background:rgba(200,149,42,.1);border-radius:10px;border:1px solid rgba(200,149,42,.3);">
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Pendientes</div>
+          <div style="font-size:42px;font-weight:900;color:var(--g);line-height:1;">57</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:3px;">Hogares</div>
+        </div>
+      </div>
+
+      <!-- Gráfico meses -->
+      <div class="ast-e-meses" style="flex:1;min-height:0;">
+        <div class="ast-e-title" style="font-size:14px;">Aptos entregados por mes — 2026</div>
+        <div style="flex:1;min-height:0;position:relative;padding:4px 0;">
+          <canvas id="chartMeses"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 8 — OFERTA VIVIENDA ===== -->
+<div class="slide" id="s8">
+  <div class="hdr">
+    <h2>Oferta vivienda nueva y usada — 2026</h2>
+    <span class="sub">Proyección familias nuevas · Inventario a 10 julio 2026</span>
+  </div>
+  <div class="body" style="flex-direction:column;padding:16px 24px;gap:12px;background:var(--bk);">
+    <div class="oferta-top">
+      <div class="oferta-ppto" style="padding:20px 24px;">
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Presupuesto meta</div>
+        <div style="font-size:28px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:4px;">$5.223.318.297</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.4);margin-bottom:16px;">Vigencia 2026</div>
+        <div style="padding:14px 16px;border-radius:8px;background:rgba(239,83,80,.12);border:1px solid rgba(239,83,80,.3);">
+          <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px;">Recaudo DAFT</div>
+          <div style="font-size:26px;font-weight:900;color:#ff8a80;line-height:1;">−$235.322.687</div>
+        </div>
+      </div>
+      <div class="oferta-inventario">
+        <div class="oferta-inv-col">
+          <div class="oferta-inv-title">Inventario vivienda nueva</div>
+          <div class="oferta-inv-item">C. Cusezar – La Alegría<br><b>18 Unds. Tipo + 1 PMR</b></div>
+          <div class="oferta-inv-item" style="margin-top:8px;">C. Capital – Ventura/Resplandor<br><b>16 Unds. Tipo + 3 Unds. 1 hab</b></div>
+        </div>
+        <div class="oferta-inv-col">
+          <div class="oferta-inv-title">Inventario DADEP</div>
+          <div class="oferta-inv-item">Registradas a nombre CVP:<br><b>3 Unds. San Cristóbal/Santa Rita</b></div>
+          <div class="oferta-inv-item" style="margin-top:8px;">En proceso de registro:<br><b>1 para julio · 1 para octubre</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="oferta-table-wrap">
+      <table class="tbl-inf">
+        <thead>
+          <tr><th>Constructora / Entidad</th><th>Proyectos</th><th>Localidad</th><th>Unidades</th><th>VALOR (88.7/80.5 SMMLV/UND)**</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cusezar</td><td>Alegría 3, 4 y 5</td><td>Bosa</td><td>19</td><td>$2.677.603.500</td></tr>
+          <tr><td>Capital</td><td>Ventura / Carmesí / Resplandor</td><td>Bosa</td><td>19</td><td>$2.953.170.000</td></tr>
+          <tr><td>Vivienda usada</td><td>Varios</td><td>Varios</td><td>3</td><td>$466.290.000</td></tr>
+          <tr style="background:rgba(255,255,255,.06);border-top:1px solid rgba(255,255,255,.15);">
+            <td colspan="3" style="font-size:12px;font-weight:700;color:rgba(255,255,255,.6);padding:8px 14px;letter-spacing:.3px;">Subtotal (Constructoras + Usada)</td>
+            <td style="font-size:14px;font-weight:700;text-align:center;color:rgba(255,255,255,.7);padding:8px 14px;">41</td>
+            <td style="font-size:14px;font-weight:700;color:rgba(255,255,255,.7);padding:8px 14px;">$6.097.063.500</td>
+          </tr>
+          <tr><td>DADEP</td><td>Vivienda unifamiliar 2 pisos</td><td>San Cristóbal</td><td>5</td><td>$0</td></tr>
+          <tr style="background:rgba(123,13,30,.25);border-top:1px solid rgba(255,255,255,.1);">
+            <td colspan="3" style="font-size:12px;color:rgba(255,140,120,.85);padding:8px 14px;">− Recaudo DAFT a la fecha</td>
+            <td style="text-align:center;color:rgba(255,140,120,.85);padding:8px 14px;">—</td>
+            <td style="font-weight:700;color:#ff8a80;padding:8px 14px;">−$235.322.687</td>
+          </tr>
+          <tr style="background:rgba(123,13,30,.25);border-top:1px solid rgba(255,255,255,.05);">
+            <td colspan="3" style="font-size:12px;color:rgba(255,140,120,.85);padding:8px 14px;">− Proyección +15 familias DAFT/CAP</td>
+            <td style="text-align:center;color:rgba(255,140,120,.85);padding:8px 14px;">—</td>
+            <td style="font-weight:700;color:#ff8a80;padding:8px 14px;">−$638.000.000</td>
+          </tr>
+          <tr style="background:rgba(123,13,30,.5);border-top:2px solid var(--r);">
+            <td colspan="3" style="font-size:17px;font-weight:900;color:#fff;padding:14px 18px;letter-spacing:.5px;">TOTAL PRESUPUESTO META</td>
+            <td style="font-size:26px;font-weight:900;text-align:center;color:#fff;padding:14px 18px;">46</td>
+            <td style="font-size:20px;font-weight:900;color:var(--g);padding:14px 18px;">$5.223.740.813</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;font-size:10px;color:#888;">** Las unidades de vivienda nueva se negociaron por debajo de los 90 SMMLV</div>
+    </div>
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 9 — PENDIENTES CONSTRUCTORAS ===== -->
+<div class="slide" id="s9">
+  <div class="hdr"><h2>Viviendas pendientes de entrega — Constructoras 2025</h2><span class="sub">6 unidades en diferentes estados · Corte: 9 julio 2026</span></div>
+  <div class="body" style="flex-direction:column;padding:16px 24px;gap:12px;background:var(--bk);">
+    <!-- KPIs top -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;flex-shrink:0;">
+      <div style="background:#1a1a1a;border-radius:8px;padding:14px 16px;border-top:3px solid #64b5f6;">
+        <div style="font-size:36px;font-weight:900;color:#64b5f6;line-height:1;">76</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;">Total unidades</div>
+      </div>
+      <div style="background:#1a1a1a;border-radius:8px;padding:14px 16px;border-top:3px solid #607d8b;">
+        <div style="font-size:36px;font-weight:900;color:#90a4ae;line-height:1;">56</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;">Entregadas 2025</div>
+      </div>
+      <div style="background:#1a1a1a;border-radius:8px;padding:14px 16px;border-top:3px solid var(--g);">
+        <div style="font-size:36px;font-weight:900;color:var(--g);line-height:1;">14</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;">Entregadas 2026</div>
+      </div>
+      <div style="background:#1a1a1a;border-radius:8px;padding:14px 16px;border-top:3px solid #ff9800;">
+        <div style="font-size:36px;font-weight:900;color:#ff9800;line-height:1;">6</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;">Pendientes en diferentes estados</div>
+      </div>
+    </div>
+    <!-- Tabla con columnas de estado -->
+    <div style="flex:1;min-height:0;overflow:auto;">
+      <table class="tbl-inf" style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="min-width:160px;">Proyecto / Total unidades</th>
+            <th style="text-align:center;background:#37474f;color:#cfd8dc;">Viviendas<br>Entregadas<br>2025</th>
+            <th style="text-align:center;">Viviendas<br>entregadas<br>2026</th>
+            <th style="text-align:center;font-size:12px;">Listas para<br>entrega</th>
+            <th style="text-align:center;font-size:12px;">Pendiente<br>Firma de<br>Escritura</th>
+            <th style="text-align:center;font-size:12px;">Propietarios<br>PAR</th>
+            <th style="text-align:center;font-size:12px;">Pendiente<br>saneamiento<br>servicios públicos/CAP</th>
+            <th style="text-align:center;font-size:12px;">Pendiente<br>entrega<br>material PAR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <b>La Alegría-Bosa</b>
+              <span style="font-size:13px;font-weight:800;color:var(--gl);margin-left:6px;">(32)</span>
+              <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:93.75%;background:var(--g);border-radius:3px;"></div></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:3px;">30/32 · 94%</div>
+            </td>
+            <td style="text-align:center;font-size:30px;font-weight:900;color:#90a4ae;">27</td>
+            <td style="text-align:center;font-size:28px;font-weight:800;color:#fff;">3*</td>
+            <td style="text-align:center;font-size:38px;font-weight:900;color:#fff;">1</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;font-size:38px;font-weight:900;color:#fff;">1<div style="font-size:11px;font-weight:400;color:rgba(255,255,255,.5);">(J Sebastian Rodríguez)</div></td>
+          </tr>
+          <tr>
+            <td>
+              <b>Paseo del Sol-Bosa</b>
+              <span style="font-size:13px;font-weight:800;color:var(--gl);margin-left:6px;">(5)</span>
+              <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:100%;background:var(--g);border-radius:3px;"></div></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:3px;">5/5 · 100%</div>
+            </td>
+            <td style="text-align:center;font-size:30px;font-weight:900;color:#90a4ae;">4</td>
+            <td style="text-align:center;font-size:28px;font-weight:800;color:#fff;">1</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+          </tr>
+          <tr>
+            <td>
+              <b>La Cabrera-Usme</b>
+              <span style="font-size:13px;font-weight:800;color:var(--gl);margin-left:6px;">(24)</span>
+              <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:95.8%;background:var(--g);border-radius:3px;"></div></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:3px;">23/24 · 96%</div>
+            </td>
+            <td style="text-align:center;font-size:30px;font-weight:900;color:#90a4ae;">21</td>
+            <td style="text-align:center;font-size:28px;font-weight:800;color:#fff;">2</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;font-size:38px;font-weight:900;color:#fff;">1<div style="font-size:11px;font-weight:400;color:rgba(255,255,255,.5);">(Lina Riaza)</div></td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+          </tr>
+          <tr>
+            <td>
+              <b>Las Violetas-Usme</b>
+              <span style="font-size:13px;font-weight:800;color:var(--gl);margin-left:6px;">(15)</span>
+              <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:80%;background:var(--g);border-radius:3px;"></div></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:3px;">12/15 · 80%</div>
+            </td>
+            <td style="text-align:center;font-size:30px;font-weight:900;color:#90a4ae;">4</td>
+            <td style="text-align:center;font-size:28px;font-weight:800;color:#fff;">8</td>
+            <td style="text-align:center;font-size:38px;font-weight:900;color:#fff;">2</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+            <td style="text-align:center;font-size:38px;font-weight:900;color:#fff;">1<div style="font-size:11px;font-weight:400;color:rgba(255,255,255,.5);">(José Ramón Sánchez CAP)</div></td>
+            <td style="text-align:center;color:rgba(255,255,255,.15);font-size:22px;">—</td>
+          </tr>
+          <tr class="total-row">
+            <td>
+              <b style="font-size:16px;">TOTAL</b>
+              <span style="font-size:30px;font-weight:900;color:#64b5f6;margin-left:8px;">76</span>
+              <div style="height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:92.1%;background:var(--r);border-radius:3px;"></div></div>
+              <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;">70/76 · 92%</div>
+            </td>
+            <td style="text-align:center;font-size:44px;font-weight:900;color:#90a4ae;">56</td>
+            <td style="text-align:center;font-size:44px;font-weight:900;color:var(--g);">14</td>
+            <td style="text-align:center;font-size:52px;font-weight:900;color:#fff;">3</td>
+            <td style="text-align:center;color:rgba(255,255,255,.2);font-size:22px;">—</td>
+            <td style="text-align:center;font-size:52px;font-weight:900;color:#fff;">1</td>
+            <td style="text-align:center;font-size:52px;font-weight:900;color:#fff;">1</td>
+            <td style="text-align:center;font-size:52px;font-weight:900;color:#fff;">1</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="flex-shrink:0;background:rgba(200,149,42,.08);border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:12px;border-left:3px solid var(--g);">
+      <div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Riesgos externos</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);">Empresas de servicios públicos · Notaría y oficina de registro · Corresponsabilidad de titulares · Procesos constructoras</div>
+    </div>
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 10 — DEMANDA ===== -->
+<div class="slide" id="s10">
+  <div class="hdr">
+    <h2>Estado de Familias — Procesos 2026</h2>
+    <span class="sub">Vivienda nueva · Usada · DADEP</span>
+  </div>
+  <div class="body" style="flex-direction:row;gap:0;overflow:hidden;">
+
+    <!-- IZQUIERDA: Fuentes + KPIs -->
+    <div style="width:42%;display:flex;flex-direction:column;gap:0;border-right:2px solid rgba(255,255,255,.07);overflow:hidden;">
+
+      <!-- Fuentes -->
+      <div style="flex-shrink:0;padding:14px 18px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.07);">
+        <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;">Fuentes</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:3px;height:36px;background:var(--r);border-radius:2px;flex-shrink:0;margin-top:2px;"></div>
+            <div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.5;">Familias con asignación previa VUR en <b style="color:#fff;">DAFT</b> y en <b style="color:#fff;">CAP</b></div>
+              <div style="font-size:11px;font-weight:800;color:var(--g);margin-top:2px;">OPTIMIZACIÓN DE RECURSOS</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:3px;height:36px;background:var(--g);border-radius:2px;flex-shrink:0;margin-top:2px;"></div>
+            <div>
+              <div style="font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.5;">Familias en relocalización con viabilidades de <b style="color:#fff;">vivienda usada</b>, renuentes AST</div>
+              <div style="font-size:11px;font-weight:800;color:var(--g);margin-top:2px;">DEPURACIÓN RELOCALIZACIÓN</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vivienda Nueva KPIs -->
+      <div style="flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:10px;border-bottom:2px solid rgba(123,13,30,.5);">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:12px;font-weight:900;color:rgba(255,120,120,.8);text-transform:uppercase;letter-spacing:1px;">Vivienda Nueva — La Alegría</div>
+          <div style="font-size:28px;font-weight:900;color:#fff;line-height:1;">38 <span style="font-size:13px;color:rgba(255,255,255,.4);font-weight:400;">unds.</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;">
+          <div style="background:rgba(90,9,20,.35);border-radius:8px;padding:12px;text-align:center;border-top:3px solid var(--r);">
+            <div style="font-size:56px;font-weight:900;color:var(--r);line-height:1;">389</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:5px;line-height:1.4;text-transform:uppercase;font-weight:700;">Expedientes DAFT<br>verificación completa</div>
+          </div>
+          <div style="background:rgba(200,149,42,.12);border-radius:8px;padding:12px;text-align:center;border-top:3px solid var(--g);">
+            <div style="font-size:56px;font-weight:900;color:var(--g);line-height:1;">61</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:5px;line-height:1.4;text-transform:uppercase;font-weight:700;">Familias potenciales<br>DAFT (29M–106M)</div>
+          </div>
+          <div style="background:rgba(46,125,50,.18);border-radius:8px;padding:12px;text-align:center;border-top:3px solid #4caf50;">
+            <div style="font-size:56px;font-weight:900;color:#66bb6a;line-height:1;">9</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:5px;line-height:1.4;text-transform:uppercase;font-weight:700;">Selecciones<br>La Alegría</div>
+          </div>
+          <div style="background:rgba(46,125,50,.18);border-radius:8px;padding:12px;text-align:center;border-top:3px solid #4caf50;">
+            <div style="font-size:56px;font-weight:900;color:#66bb6a;line-height:1;">9</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:5px;line-height:1.4;text-transform:uppercase;font-weight:700;">Familias trámite<br>resolución VUR</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vivienda Usada KPIs -->
+      <div style="flex-shrink:0;padding:14px 18px;background:rgba(27,94,32,.12);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:900;color:rgba(150,255,150,.7);text-transform:uppercase;letter-spacing:1px;">Vivienda Usada / Especie</div>
+          <div style="font-size:28px;font-weight:900;color:#fff;line-height:1;">8 <span style="font-size:13px;color:rgba(255,255,255,.4);font-weight:400;">unds.</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+          <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:10px;text-align:center;border-top:2px solid var(--g);">
+            <div style="font-size:40px;font-weight:900;color:var(--g);line-height:1;">16</div>
+            <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:4px;text-transform:uppercase;font-weight:700;">Potenciales</div>
+          </div>
+          <div style="background:rgba(46,125,50,.2);border-radius:8px;padding:10px;text-align:center;border-top:2px solid #66bb6a;">
+            <div style="font-size:40px;font-weight:900;color:#66bb6a;line-height:1;">1</div>
+            <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:4px;text-transform:uppercase;font-weight:700;">Selec. DADEP 1/3</div>
+          </div>
+          <div style="background:rgba(46,125,50,.2);border-radius:8px;padding:10px;text-align:center;border-top:2px solid #66bb6a;">
+            <div style="font-size:40px;font-weight:900;color:#66bb6a;line-height:1;">2</div>
+            <div style="font-size:9.5px;color:rgba(255,255,255,.4);margin-top:4px;text-transform:uppercase;font-weight:700;">Trámite VUR 2/3</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DERECHA: 3 tablas con títulos -->
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;">
+
+      <!-- 9 Familias Resolución VUR -->
+      <div style="flex:1;display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.06);min-height:0;">
+        <div style="padding:8px 16px;background:rgba(123,13,30,.6);font-size:12px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.8px;flex-shrink:0;">9 Familias · Resolución VUR</div>
+        <div style="overflow-y:auto;flex:1;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr style="background:rgba(255,255,255,.05);position:sticky;top:0;">
+              <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">ID</th>
+              <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">Titular</th>
+              <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">Saneamiento</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2014-Q21-00711</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Sandra Y. Parra Rodriguez</td><td style="padding:5px 12px;color:rgba(255,200,120,.85);font-size:11px;">Propietaria + Enel</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2011-19-13467</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Teresa de Jesus Castillo Rojas</td><td style="padding:5px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2005-1-7538</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Blanca Rubiela Aldana Ramirez</td><td style="padding:5px 12px;color:rgba(255,200,120,.85);font-size:11px;">Acueducto + Energía</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">1999-1-3098</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Nelson Enrique Aldana Ramirez</td><td style="padding:5px 12px;color:rgba(255,200,120,.85);font-size:11px;">Acueducto</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2022-19-17614</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Luis Alexander Perez</td><td style="padding:5px 12px;color:rgba(255,200,120,.85);font-size:11px;">Acueducto + Energía</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2023-05-17760</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Arley Betancourth Agudelo</td><td style="padding:5px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2014-1-14725</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Luz Maria Gomez Borda</td><td style="padding:5px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2023-05-17765</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Pedro Barrera Barrera</td><td style="padding:5px 12px;color:rgba(255,200,120,.85);font-size:11px;">Acueducto + Energía</td></tr>
+              <tr><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2016-08-14900</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Edna Liced Capera Serrano</td><td style="padding:5px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 9 Selecciones La Alegría -->
+      <div style="flex:1;display:flex;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.06);min-height:0;">
+        <div style="padding:8px 16px;background:rgba(46,125,50,.6);font-size:12px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.8px;flex-shrink:0;">9 Selecciones · La Alegría</div>
+        <div style="overflow-y:auto;flex:1;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr style="background:rgba(255,255,255,.05);position:sticky;top:0;">
+              <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">ID</th>
+              <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">Titular</th>
+              <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">Saneamiento</th>
+            </tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2013000005</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Luz Myriam Rojas Olaya</td><td style="padding:5px 12px;color:rgba(255,190,80,.85);font-size:11px;">Verif. Cruces</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2011-4-12678</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Maria Florencia Mosquera</td><td style="padding:5px 12px;color:rgba(255,190,80,.85);font-size:11px;">Verif. Cruces</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2019-04-17029</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Luz Enith Sanchez Galindo</td><td style="padding:5px 12px;color:rgba(255,190,80,.85);font-size:11px;">Verif. Cruces</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2014-Q16-01192</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Yuldor Rincon</td><td style="padding:5px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2013-Q10-00521</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Ignacio Torres Velandia</td><td style="padding:5px 12px;color:rgba(255,190,80,.85);font-size:11px;">Propietario + Cruces</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2012-ALES-26</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Alvaro Montealegre</td><td style="padding:5px 12px;color:rgba(255,190,80,.85);font-size:11px;">Verif. Cruces</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2023-19-17854</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Luis Gerardo Mesa</td><td style="padding:5px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,.04);background:rgba(255,255,255,.02);"><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2021-19-17375</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Zaray Estefania Mazo</td><td style="padding:5px 12px;color:rgba(255,200,120,.85);font-size:11px;">Vanti</td></tr>
+              <tr><td style="padding:5px 12px;color:rgba(255,255,255,.3);font-size:10.5px;">2023-19-17841</td><td style="padding:5px 12px;color:#ddd;font-size:11.5px;">Doralia Burbano</td><td style="padding:5px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2 Familias VUR Usada -->
+      <div style="flex-shrink:0;display:flex;flex-direction:column;min-height:0;">
+        <div style="padding:8px 16px;background:rgba(21,101,192,.55);font-size:12px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.8px;">2 Familias · Resolución VUR Usada 2/3</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:rgba(255,255,255,.05);">
+            <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">ID</th>
+            <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">Titular</th>
+            <th style="padding:5px 12px;font-size:10px;color:rgba(255,255,255,.35);font-weight:700;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);">Saneamiento</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.05);"><td style="padding:7px 12px;color:rgba(255,255,255,.35);font-size:10.5px;">2018-04-16257</td><td style="padding:7px 12px;color:#ddd;font-size:11.5px;">Pedro Alonso Perez</td><td style="padding:7px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+            <tr><td style="padding:7px 12px;color:rgba(255,255,255,.35);font-size:10.5px;">2023-19-17872</td><td style="padding:7px 12px;color:#ddd;font-size:11.5px;">Yeison David Esquivel</td><td style="padding:7px 12px;color:#4caf50;font-size:11px;">Ok</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 11 — CRONOGRAMA ===== -->
+<div class="slide" id="s11">
+  <div class="hdr">
+    <h2>Cronograma — Grupo 1</h2>
+    <span class="sub">Hitos del proceso · Julio – Octubre 2026</span>
+  </div>
+  <div class="body" style="flex-direction:column;padding:22px 32px 22px;gap:0;background:var(--bk);justify-content:center;">
+
+    <!-- Leyenda grupos -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;flex-shrink:0;">
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;margin-right:4px;">Grupos:</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:rgba(255,255,255,.7);"><div style="width:14px;height:14px;border-radius:3px;background:var(--r);"></div> G1 &amp; G2</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:rgba(255,255,255,.7);"><div style="width:14px;height:14px;border-radius:3px;background:#9c27b0;"></div> VUR</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:rgba(255,255,255,.7);"><div style="width:14px;height:14px;border-radius:3px;background:#C8952A;"></div> G1</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:rgba(255,255,255,.7);"><div style="width:14px;height:14px;border-radius:3px;background:#1976d2;"></div> G2 &amp; G3</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:14px;color:rgba(255,255,255,.7);"><div style="width:14px;height:14px;border-radius:3px;background:#388e3c;"></div> Escritura</div>
+    </div>
+
+    <!-- Cabecera meses -->
+    <div style="display:flex;margin-bottom:8px;flex-shrink:0;">
+      <div style="width:250px;flex-shrink:0;"></div>
+      <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:0;">
+        <div style="text-align:center;padding:8px 4px;border-radius:6px;background:rgba(200,149,42,.18);border:1px solid rgba(200,149,42,.4);font-size:16px;font-weight:800;color:var(--g);letter-spacing:1px;">JUL ▼</div>
+        <div style="text-align:center;padding:8px 4px;font-size:16px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:1px;">AGO</div>
+        <div style="text-align:center;padding:8px 4px;font-size:16px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:1px;">SEP</div>
+        <div style="text-align:center;padding:8px 4px;font-size:16px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:1px;">OCT</div>
+      </div>
+    </div>
+
+    <!-- Gantt rows -->
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px;min-height:0;">
+
+      <!-- Fila 1 -->
+      <div class="g-row">
+        <div class="g-lbl">Aprobaciones en mesa</div>
+        <div class="g-track">
+          <div class="g-bar" style="left:0%;width:37.5%;background:var(--r);" data-tip="Jul – mitad Ago: Aprobaciones en mesa"></div>
+        </div>
+      </div>
+
+      <!-- Fila 2 -->
+      <div class="g-row">
+        <div class="g-lbl">Resoluciones VUR notificadas</div>
+        <div class="g-track">
+          <div class="g-bar" style="left:12.5%;width:25%;background:#9c27b0;" data-tip="½ Jul – ½ Ago: Resoluciones VUR notificadas"></div>
+        </div>
+      </div>
+
+      <!-- Fila 3 -->
+      <div class="g-row">
+        <div class="g-lbl">Firma promesa de compraventa</div>
+        <div class="g-track">
+          <div class="g-bar" style="left:25%;width:25%;background:#C8952A;" data-tip="Agosto: Firma promesa de compraventa"></div>
+        </div>
+      </div>
+
+      <!-- Fila 4 -->
+      <div class="g-row">
+        <div class="g-lbl">Giro 90% VUR</div>
+        <div class="g-track">
+          <div class="g-bar" style="left:37.5%;width:25%;background:#1976d2;" data-tip="½ Ago – ½ Sep: Giro 90% VUR"></div>
+        </div>
+      </div>
+
+      <!-- Fila 5 -->
+      <div class="g-row">
+        <div class="g-lbl">Firma escritura de compraventa</div>
+        <div class="g-track">
+          <div class="g-bar" style="left:50%;width:50%;background:#388e3c;" data-tip="Sep – Oct: Firma escritura de compraventa"></div>
+        </div>
+      </div>
+
+      <!-- Fila 6 -->
+      <div class="g-row">
+        <div class="g-lbl">Entrega vivienda de reposición</div>
+        <div class="g-track">
+          <div class="g-bar" style="left:50%;width:50%;background:var(--r);" data-tip="Sep – Oct: Entrega vivienda de reposición"></div>
+        </div>
+      </div>
+
+      <!-- Fila 7 -->
+      <div class="g-row">
+        <div class="g-lbl">Saneamiento PAR material y legal</div>
+        <div class="g-track">
+          <div class="g-bar" style="left:0%;width:100%;background:#546e7a;" data-tip="Jul – Oct: Saneamiento PAR material y legal"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Riesgo -->
+    <div style="margin-top:14px;flex-shrink:0;background:rgba(200,149,42,.1);border-left:4px solid var(--g);border-radius:0 8px 8px 0;padding:12px 18px;font-size:15px;color:rgba(255,255,255,.65);line-height:1.5;">
+      <b style="color:var(--g);">Riesgos externos:</b> Empresas de servicios públicos · Notaría y Oficina de Registro · Corresponsabilidad de los titulares · Procesos con constructoras
+    </div>
+
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 7 — FINANCIERO ===== -->
+<div class="slide" id="s7">
+  <div class="hdr">
+    <h2>Familias reasentadas 2026 — Depuración financiera</h2>
+    <span class="sub">Corte: 10 julio 2026</span>
+  </div>
+  <div class="body" style="flex-direction:column;padding:16px 24px;gap:14px;background:var(--bk);">
+    <div class="fin-top">
+      <div class="fin-kpi f1"><div class="fin-n">306</div><div class="fin-lbl">Hogares que salieron de relocalización</div></div>
+      <div class="fin-kpi f2"><div class="fin-n">262</div><div class="fin-lbl">Salen definitivamente de relocalización</div></div>
+      <div class="fin-kpi f3"><div class="fin-n">229</div><div class="fin-lbl">Hogares reasentados definitivamente en 2026</div></div>
+    </div>
+    <div class="fin-bottom">
+      <div class="fin-box">
+        <div class="fin-box-title">Pasivos y reintegros</div>
+        <div class="fin-row dark"><span class="fin-row-lbl">Pasivos VUR pendientes</span><span class="fin-row-val red">$43.814.813</span></div>
+        <div class="fin-row dark"><span class="fin-row-lbl">Hogares con saldo DAFT (AST)</span><span class="fin-row-val gold">$901.537.260</span></div>
+        <div class="fin-row dark"><span class="fin-row-lbl">Hogares con saldo DAFT (en 18 hogares)</span><span class="fin-row-val" style="font-size:13px;color:rgba(255,255,255,.6);">18 hogares AST</span></div>
+        <div class="fin-note">Los saldos DAFT corresponden a hogares del proyecto Arboleda Santa Teresita.</div>
+      </div>
+      <div class="fin-box">
+        <div class="fin-box-title">Reintegros CAP — 43 hogares</div>
+        <div class="fin-row dark"><span class="fin-row-lbl">AST</span><span class="fin-row-val gold">$214.641.918</span></div>
+        <div class="fin-row dark"><span class="fin-row-lbl">M+D</span><span class="fin-row-val gold">$462.018.138</span></div>
+        <div style="margin-top:4px;padding:12px;border-radius:6px;background:rgba(200,149,42,.15);border:1px solid rgba(200,149,42,.3);">
+          <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase;">Total reintegros CAP</div>
+          <div class="fin-n" style="color:var(--g);">$676.660.056</div>
+        </div>
+        <div class="fin-note">43 hogares con reintegros CAP distribuidos entre los proyectos AST y M+D.</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 12 — HUERTAS URBANAS ===== -->
+<div class="slide" id="s12">
+  <div class="hdr">
+    <h2>Huertas Urbanas</h2>
+    <span class="sub">Aprovechamiento de predios objeto de reasentamiento</span>
+  </div>
+  <div class="body" style="flex-direction:column;padding:20px 28px;gap:16px;background:var(--bk);">
+
+    <!-- Banner piloto -->
+    <div style="background:rgba(46,125,50,.15);border:1px solid rgba(76,175,80,.25);border-radius:12px;padding:20px 28px;display:flex;align-items:center;gap:24px;flex-shrink:0;">
+      <div style="width:60px;height:60px;border-radius:50%;background:rgba(76,175,80,.2);border:2px solid rgba(76,175,80,.4);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">&#127807;</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#66bb6a;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Piloto de comodato — Viabilidad técnica aprobada</div>
+        <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;">Barrio Carolina Sur I y II</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:15px;color:rgba(255,255,255,.75);background:rgba(76,175,80,.12);border-radius:20px;padding:5px 16px;border:1px solid rgba(76,175,80,.25);">Huerta de agricultura urbana</span>
+          <span style="font-size:15px;color:rgba(255,255,255,.75);background:rgba(76,175,80,.12);border-radius:20px;padding:5px 16px;border:1px solid rgba(76,175,80,.25);">Aula ambiental</span>
+          <span style="font-size:15px;color:rgba(255,255,255,.75);background:rgba(76,175,80,.12);border-radius:20px;padding:5px 16px;border:1px solid rgba(76,175,80,.25);">Zona comunal</span>
+        </div>
+      </div>
+      <div style="font-size:13px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Corto–mediano plazo</div>
+    </div>
+
+    <!-- Mesas de trabajo -->
+    <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;">Avances del período — Mesas de trabajo</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0;">
+
+      <div style="background:#1a1a1a;border-radius:12px;padding:24px 26px;border-left:5px solid #66bb6a;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <div style="font-size:64px;font-weight:900;color:#66bb6a;line-height:1;">16</div>
+          <div style="font-size:18px;color:rgba(255,255,255,.5);font-weight:600;">predios</div>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,.5);">Mesa · 19 junio 2026</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">Jardín Botánico de Bogotá</div>
+        <div style="font-size:16px;color:rgba(255,255,255,.8);line-height:1.55;flex:1;">El <b style="color:#fff;">JBB</b> identificó <b style="color:#66bb6a;">16 casos</b> con características similares al piloto Carolina Sur, para remitir a la CVP para análisis y gestión.</div>
+      </div>
+
+      <div style="background:#1a1a1a;border-radius:12px;padding:24px 26px;border-left:5px solid var(--g);display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:baseline;gap:12px;">
+          <div style="font-size:64px;font-weight:900;color:var(--g);line-height:1;">5</div>
+          <div style="font-size:18px;color:rgba(255,255,255,.5);font-weight:600;">predios</div>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,.5);">Mesa · 9 julio 2026</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;font-weight:700;">Alcaldía Local Rafael Uribe Uribe</div>
+        <div style="font-size:16px;color:rgba(255,255,255,.8);line-height:1.55;flex:1;">La <b style="color:#fff;">Alcaldía Local</b> presentó <b style="color:var(--g);">5 iniciativas</b> de aprovechamiento de predios en zonas de reasentamiento de Rafael Uribe Uribe.</div>
+      </div>
+
+    </div>
+
+    <!-- Resultado -->
+    <div style="flex-shrink:0;background:rgba(200,149,42,.12);border:1px solid rgba(200,149,42,.25);border-radius:12px;padding:16px 26px;display:flex;align-items:center;gap:18px;">
+      <div style="font-size:13px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;">Resultado</div>
+      <div style="width:1px;height:36px;background:rgba(200,149,42,.3);flex-shrink:0;"></div>
+      <div style="font-size:16px;color:rgba(255,255,255,.85);line-height:1.5;"><b style="color:var(--g);">21 predios identificados</b> (16 JBB + 5 Rafael Uribe Uribe) como oportunidades para fortalecer el <b style="color:#fff;">uso comunitario y ambiental</b> en zonas de reasentamiento de Bogotá D.C.</div>
+    </div>
+
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 2 — DEPURACIÓN ===== -->
+<div class="slide" id="s2">
+  <div class="hdr">
+    <h2>Depuración de información — Estado En Proceso</h2>
+    <span class="sub">Metodología 3 bloques · 36.327 expedientes · detalle 5.349 en proceso</span>
+  </div>
+  <div class="body" style="flex-direction:column;padding:14px 20px;gap:10px;background:var(--bk);">
+
+    <!-- 3 BLOQUES -->
+    <div class="bloques" style="flex-shrink:0;">
+      <div class="bloque a">
+        <div class="bloque-tag">Bloque A · Depuración masiva</div>
+        <div class="bloque-n">19.899</div>
+        <div class="bloque-title">Acciones automatizadas</div>
+        <div class="bloque-desc">Ejecutadas sobre toda la base sin intervención manual.</div>
+        <div class="bloque-items">
+          <div class="bloque-item"><div class="bloque-dot" style="background:#4caf50;"></div>A.1 · Georreferenciación masiva — 100%</div>
+          <div class="bloque-item"><div class="bloque-dot" style="background:#4caf50;"></div>A.2 · Enriquecimiento catastral — 100%</div>
+          <div class="bloque-item"><div class="bloque-dot" style="background:#4caf50;"></div>A.3 · Depuración por subestados GIS — 100%</div>
+        </div>
+      </div>
+      <div class="bloque b">
+        <div class="bloque-tag">Bloque B · Terminados</div>
+        <div class="bloque-n">11.079</div>
+        <div class="bloque-title">Saneamiento predial</div>
+        <div class="bloque-desc">Posterior al reasentamiento y definición de destino final de cada predio.</div>
+        <div class="bloque-items">
+          <div class="bloque-item"><div class="bloque-dot" style="background:var(--g);"></div>B.1 · Predios</div>
+          <div class="bloque-item"><div class="bloque-dot" style="background:var(--g);"></div>B.2 · Mejoras</div>
+          <div class="bloque-item"><div class="bloque-dot" style="background:var(--g);"></div>B.3 · Sin identificar</div>
+        </div>
+      </div>
+      <div class="bloque c">
+        <div class="bloque-tag">Bloque C · En proceso</div>
+        <div class="bloque-n">5.349</div>
+        <div class="bloque-title">Definir universo real de acción</div>
+        <div class="bloque-desc">Establecer ruta para cada subestado y depurar activos pendientes.</div>
+        <div class="bloque-items">
+          <div class="bloque-item"><div class="bloque-dot" style="background:#ef5350;"></div>C.1 · Potencial · 2.551</div>
+          <div class="bloque-item"><div class="bloque-dot" style="background:#ef5350;"></div>C.2 · En inicio · 1.429</div>
+          <div class="bloque-item"><div class="bloque-dot" style="background:#ef5350;"></div>C.3 · No apto · 464 &nbsp;|&nbsp; C.4 · Retirar · 905</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETALLE EN PROCESO -->
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px;min-height:0;">
+      <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;">Detalle Bloque C — 5.349 expedientes en proceso</div>
+
+      <!-- 4 sub-cards -->
+      <div class="ep-sub" style="flex-shrink:0;">
+        <div class="ep-card pot"><div class="ep-card-n">2.551</div><div class="ep-card-txt"><div class="ep-card-lbl">Potencial</div><div class="ep-card-desc">Hogares con condición de riesgo confirmada pendientes de inicio</div></div></div>
+        <div class="ep-card ini"><div class="ep-card-n">1.429</div><div class="ep-card-txt"><div class="ep-card-lbl">En inicio del proceso</div><div class="ep-card-desc">Expedientes en etapa de vinculación y caracterización</div></div></div>
+        <div class="ep-card no"><div class="ep-card-n">464</div><div class="ep-card-txt"><div class="ep-card-lbl">No aptos</div><div class="ep-card-desc">Hogares que no cumplen criterios de elegibilidad</div></div></div>
+        <div class="ep-card ret"><div class="ep-card-n">905</div><div class="ep-card-txt"><div class="ep-card-lbl">Para retirar</div><div class="ep-card-desc">ZMPA / Adendas — requieren cierre administrativo</div></div></div>
+      </div>
+
+      <!-- ZMPA cards + table side by side -->
+      <div style="flex:1;display:flex;gap:10px;min-height:0;">
+        <div class="ep-zmpa" style="flex-shrink:0;flex-direction:column;width:180px;">
+          <div class="ep-zmpa-card"><div class="ep-zmpa-n">97</div><div class="ep-zmpa-lbl">Predios revisados para cierre ZMPA</div></div>
+          <div class="ep-zmpa-card"><div class="ep-zmpa-n">116</div><div class="ep-zmpa-lbl">Enviados a mutación tipo T3 a UAECD</div></div>
+        </div>
+        <div style="flex:1;overflow-y:auto;min-height:0;">
+          <table class="tbl-dark" style="font-size:12.5px;width:100%;">
+            <thead>
+              <tr><th>Subestado</th><th>Cód.</th><th>Cantidad</th><th>%</th><th>Acción</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Potencial</td><td>C.1</td><td>2.551</td><td>47,7%</td><td>Iniciar proceso de vinculación</td></tr>
+              <tr><td>En inicio del proceso</td><td>C.2</td><td>1.429</td><td>26,7%</td><td>Acelerar caracterización y viabilidad</td></tr>
+              <tr><td>No apto</td><td>C.3</td><td>464</td><td>8,7%</td><td>Emitir resolución de cierre</td></tr>
+              <tr><td>Para retirar (ZMPA/Adendas)</td><td>C.4</td><td>905</td><td>16,9%</td><td>Cierre ZMPA + mutación T3 UAECD</td></tr>
+              <tr class="total-row"><td colspan="2"><b>Total Bloque C</b></td><td><b>5.349</b></td><td><b>100%</b></td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+<!-- ===== SLIDE 13 — ENTREGADO 2026 ===== -->
+<div class="slide" id="s13">
+  <div class="hdr">
+    <h2>Vivienda entregada 2026 — Por proyecto y localidad de origen</h2>
+    <span class="sub">300 hogares reasentados · Corte: julio 2026</span>
+  </div>
+  <div class="body" style="flex-direction:row;gap:0;background:var(--bk);">
+
+    <!-- Izquierda: gráfico por proyecto (Chart.js) -->
+    <div style="flex:0 0 44%;padding:18px 20px 16px;display:flex;flex-direction:column;gap:12px;border-right:1px solid rgba(255,255,255,.06);">
+      <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;">Aptos entregados por proyecto — 2026</div>
+      <div style="flex:1;min-height:0;position:relative;">
+        <canvas id="chartProj2026"></canvas>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;">
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;">Total hogares reasentados 2026</div>
+        <div style="font-size:62px;font-weight:900;color:#fff;line-height:1;letter-spacing:-2px;">300</div>
+        <div style="font-size:15px;color:rgba(255,255,255,.4);">hogares · 5 proyectos</div>
+      </div>
+    </div>
+
+    <!-- Derecha: mapa de localidades de origen -->
+    <div style="flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;">Localidad de origen de los hogares</div>
+      <div id="mapOrigen" style="flex:1;border-radius:8px;overflow:hidden;min-height:0;"></div>
+    </div>
+
+  </div>
+  <div class="foot"><span>REAS — CVP · 2026</span><span>Dirección de Reasentamientos · Caja de Vivienda Popular · Bogotá D.C.</span></div>
+</div>
+
+</div><!-- /deck -->
+
+<button class="nav" id="prev" onclick="go(-1)">&#8249;</button>
+<button class="nav" id="next" onclick="go(1)">&#8250;</button>
+<div class="dots" id="dots"></div>
+<span class="ctr" id="ctr"></span>
+
+<script>
+let cur=0,ci={};
+const slides=document.querySelectorAll('.slide'),n=slides.length;
+function buildDots(){const d=document.getElementById('dots');for(let i=0;i<n;i++){const x=document.createElement('div');x.className='dot'+(i===0?' on':'');x.onclick=()=>goTo(i);d.appendChild(x);}}
+function upd(){document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('on',i===cur));document.getElementById('ctr').textContent=(cur+1)+' / '+n;}
+function goTo(i){slides[cur].classList.remove('active');cur=(i+n)%n;slides[cur].classList.add('active');upd();init(cur);}
+function go(d){goTo(cur+d);}
+document.addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown',' '].includes(e.key))go(1);
+  if(['ArrowLeft','ArrowUp'].includes(e.key))go(-1);
+  if(e.key==='f'||e.key==='F'){const el=document.documentElement;if(!document.fullscreenElement){el.requestFullscreen&&el.requestFullscreen();}else{document.exitFullscreen&&document.exitFullscreen();}}
+  if(e.key==='Escape'&&document.fullscreenElement){e.preventDefault();document.exitFullscreen&&document.exitFullscreen();}
+});
+
+function initMeses(){
+  if(ci.mes)return;ci.mes=1;
+  new Chart(document.getElementById('chartMeses'),{
+    type:'bar',
+    data:{
+      labels:['Abril','Mayo','Junio'],
+      datasets:[{
+        data:[251,1,39],
+        backgroundColor:['#7B0D1E','rgba(255,255,255,.15)','#C8952A'],
+        borderRadius:6,
+        borderSkipped:false,
+        hoverBackgroundColor:['#a31525','rgba(255,255,255,.3)','#e0aa40'],
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:600,easing:'easeOutQuart'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(13,13,13,.95)',
+          borderColor:'rgba(255,255,255,.1)',
+          borderWidth:1,
+          titleColor:'#fff',
+          titleFont:{size:15,weight:'bold'},
+          bodyColor:'rgba(255,255,255,.65)',
+          bodyFont:{size:13},
+          padding:12,
+          callbacks:{
+            title:c=>c[0].label+' 2026',
+            label:c=>' '+c.raw.toLocaleString('es-CO')+' apartamentos entregados'
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:'rgba(255,255,255,.65)',font:{size:14,weight:'bold'}},
+          grid:{display:false},
+          border:{display:false}
+        },
+        y:{
+          ticks:{color:'rgba(255,255,255,.4)',font:{size:12}},
+          grid:{color:'rgba(255,255,255,.06)'},
+          border:{display:false},
+          beginAtZero:true
+        }
+      }
+    }
+  });
+}
+
+function initProj2026(){
+  if(ci.proj)return;ci.proj=1;
+  new Chart(document.getElementById('chartProj2026'),{
+    type:'bar',
+    indexAxis:'y',
+    data:{
+      labels:['Arboleda Santa Teresita','Las Violetas','La Alegría','La Cabrera','Paseo del Sol'],
+      datasets:[{
+        data:[286,8,3,2,1],
+        backgroundColor:['#7B0D1E','#5A3060','#1a5276','#1a4d3a','#4a4000'],
+        hoverBackgroundColor:['#a31525','#7b4f8c','#2874a6','#27734a','#7a6800'],
+        borderRadius:5,
+        borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:{duration:700,easing:'easeOutQuart'},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(13,13,13,.95)',
+          borderColor:'rgba(255,255,255,.1)',
+          borderWidth:1,
+          titleColor:'#fff',
+          titleFont:{size:14,weight:'bold'},
+          bodyColor:'rgba(255,255,255,.65)',
+          bodyFont:{size:13},
+          padding:12,
+          callbacks:{label:c=>' '+c.raw.toLocaleString('es-CO')+' hogares reasentados en 2026'}
+        }
+      },
+      scales:{
+        x:{
+          ticks:{color:'rgba(255,255,255,.45)',font:{size:12}},
+          grid:{color:'rgba(255,255,255,.05)'},
+          border:{display:false},
+          beginAtZero:true
+        },
+        y:{
+          ticks:{color:'rgba(255,255,255,.7)',font:{size:12},maxRotation:0},
+          grid:{display:false},
+          border:{display:false}
+        }
+      }
+    }
+  });
+}
+
+const GEOJSON_LOC={"type":"FeatureCollection","name":"localidades","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"LocNombre":"ANTONIO NARI\u00d1O","LocAAdmini":"Acuerdo 117 de 2003","LocArea":4879543.38643,"LocCodigo":"15","SHAPE_Leng":0.108973020106,"SHAPE_Area":0.000397341362785},"geometry":{"type":"Polygon","coordinates":[[[-74.1307544629999,4.593353347000061],[-74.1209023959999,4.593784475000064],[-74.10707300599995,4.598243989000082],[-74.10320447299995,4.594661256000052],[-74.0907160509999,4.592532264000056],[-74.0849308679999,4.589319823000039],[-74.09458245899992,4.575796995000076],[-74.10266081399993,4.581372499000054],[-74.10888231099995,4.58922836000005],[-74.11686321099995,4.58844715500004],[-74.12447142399992,4.589959367000063],[-74.1307544629999,4.593353347000061]]]}},{"type":"Feature","properties":{"LocNombre":"TUNJUELITO","LocAAdmini":"Acuerdo 117 de 2003","LocArea":9910939.74357,"LocCodigo":"06","SHAPE_Leng":0.210541987668,"SHAPE_Area":0.00080703274926},"geometry":{"type":"Polygon","coordinates":[[[-74.13776618399993,4.594885111000053],[-74.12829044699993,4.592653188000043],[-74.12860974499995,4.586644792000072],[-74.13087511499992,4.585899686000062],[-74.1252557979999,4.569567335000045],[-74.12663298199993,4.566491781000082],[-74.12142428099992,4.555305419000092],[-74.12114808099994,4.545429557000091],[-74.1238684409999,4.544489567000085],[-74.12997784299995,4.546037806000072],[-74.12693981599995,4.547216574000061],[-74.12630418099991,4.546122844000081],[-74.12536366799992,4.547505709000063],[-74.12709757499994,4.549616141000058],[-74.13196963399992,4.549550765000049],[-74.13319105199992,4.556218551000086],[-74.13525832199991,4.557141269000056],[-74.13398708499994,4.55746326600007],[-74.13387728499993,4.560712534000061],[-74.14044901199992,4.564958417000071],[-74.14046049399991,4.568326329000058],[-74.14170970799995,4.568845486000043],[-74.14046045499992,4.570469039000045],[-74.14324501899995,4.572827117000088],[-74.14096114599994,4.576074162000054],[-74.14261755599995,4.577316764000045],[-74.14483950499994,4.573010682000074],[-74.14650857899994,4.574795290000054],[-74.14744732499992,4.573743683000089],[-74.14705812599993,4.57649422500009],[-74.14999024299993,4.578326785000058],[-74.14931433599992,4.58145408900009],[-74.1472158599999,4.581947291000063],[-74.14842153299992,4.583309790000044],[-74.15111426999994,4.582574923000038],[-74.15059129799994,4.58452116400008],[-74.1521550569999,4.585407672000088],[-74.15049479699991,4.587985612000068],[-74.15264790099991,4.588696558000038],[-74.15175791799993,4.587417471000037],[-74.15306973899993,4.586379134000083],[-74.15332112399994,4.587904404000085],[-74.15695650499993,4.588703541000086],[-74.15425967099992,4.591257839000093],[-74.15138850199992,4.59140020600006],[-74.15205461799991,4.593044121000048],[-74.15418739699993,4.592856341000072],[-74.1522637029999,4.595686897000064],[-74.13776618399993,4.594885111000053]]]}},{"type":"Feature","properties":{"LocNombre":"RAFAEL URIBE URIBE","LocAAdmini":"Acuerdo 117 de 2003","LocArea":13834084.8065,"LocCodigo":"18","SHAPE_Leng":0.174512697896,"SHAPE_Area":0.00112647548612},"geometry":{"type":"Polygon","coordinates":[[[-74.12803073399994,4.592539093000084],[-74.12447142399992,4.589959367000063],[-74.11686321099995,4.58844715500004],[-74.10888231099995,4.58922836000005],[-74.10266081399993,4.581372499000054],[-74.09458245899992,4.575796995000076],[-74.10627167599995,4.563896818000046],[-74.10176154299995,4.555905401000075],[-74.10229740799991,4.545970307000061],[-74.10371321999992,4.545517970000049],[-74.0981482649999,4.534945819000086],[-74.1123824149999,4.541682810000054],[-74.11256749799992,4.540377108000087],[-74.11632893899991,4.540643765000084],[-74.12114808099994,4.545429557000091],[-74.1215727309999,4.556171378000045],[-74.12663298199993,4.566491781000082],[-74.1252557979999,4.569567335000045],[-74.13087511499992,4.585899686000062],[-74.12860974499995,4.586644792000072],[-74.12803073399994,4.592539093000084]]]}},{"type":"Feature","properties":{"LocNombre":"CANDELARIA","LocAAdmini":"Acuerdo 117 de 2003","LocArea":2060242.92048,"LocCodigo":"17","SHAPE_Leng":0.0671578803281,"SHAPE_Area":0.000167767155959},"geometry":{"type":"Polygon","coordinates":[[[-74.0662087259999,4.603171742000086],[-74.06231439899994,4.603264548000084],[-74.05926130599994,4.601382841000088],[-74.0650447889999,4.599056393000069],[-74.0647117279999,4.597414685000047],[-74.06636874599991,4.597285101000068],[-74.06829015299991,4.593576145000043],[-74.06832146399995,4.589936039000065],[-74.0705791179999,4.59145656000004],[-74.07278295799995,4.588988740000048],[-74.0806290939999,4.591689828000085],[-74.08144463499991,4.594588259000091],[-74.0766983449999,4.602111298000068],[-74.07106740699993,4.600609333000079],[-74.0662087259999,4.603171742000086]]]}},{"type":"Feature","properties":{"LocNombre":"BARRIOS UNIDOS","LocAAdmini":"Acuerdo 8 de 1977","LocArea":11903448.2049,"LocCodigo":"12","SHAPE_Leng":0.121180170982,"SHAPE_Area":0.000969405683082},"geometry":{"type":"Polygon","coordinates":[[[-74.0572470319999,4.686836296000081],[-74.06463473999992,4.649647362000053],[-74.08482892699993,4.654172240000094],[-74.09371541699994,4.666065227000047],[-74.08517844999994,4.678943195000045],[-74.07115508499993,4.68935541400009],[-74.0572470319999,4.686836296000081]]]}},{"type":"Feature","properties":{"LocNombre":"TEUSAQUILLO","LocAAdmini":"Acuerdo 8 de 1977","LocArea":14193168.1275,"LocCodigo":"13","SHAPE_Leng":0.148314411963,"SHAPE_Area":0.0011558326684},"geometry":{"type":"Polygon","coordinates":[[[-74.09371541699994,4.666065227000047],[-74.0836132089999,4.65334628100004],[-74.06463473999992,4.649647362000053],[-74.0697117119999,4.621638521000079],[-74.07282911699991,4.61541733200005],[-74.07882820899994,4.623891494000077],[-74.0914515039999,4.625717200000054],[-74.1104452159999,4.645137208000051],[-74.09371541699994,4.666065227000047]]]}},{"type":"Feature","properties":{"LocNombre":"PUENTE ARANDA","LocAAdmini":"Acuerdo 8 de 1977","LocArea":17311149.9363,"LocCodigo":"16","SHAPE_Leng":0.161115659936,"SHAPE_Area":0.00140969994515},"geometry":{"type":"Polygon","coordinates":[[[-74.11829863999992,4.637411585000052],[-74.1104452159999,4.645137208000051],[-74.0914515039999,4.625717200000054],[-74.08319894699991,4.624698289000094],[-74.09912023899994,4.605019923000043],[-74.10707300599995,4.598243989000082],[-74.1221429069999,4.59356224600009],[-74.13776618399993,4.594885111000053],[-74.1292653989999,4.608854531000077],[-74.11829863999992,4.637411585000052]]]}},{"type":"Feature","properties":{"LocNombre":"LOS MARTIRES","LocAAdmini":"Acuerdo 8 de 1977","LocArea":6514046.2604,"LocCodigo":"14","SHAPE_Leng":0.0993822324656,"SHAPE_Area":0.000530449880212},"geometry":{"type":"Polygon","coordinates":[[[-74.07282911699991,4.61541733200005],[-74.0890048949999,4.591819547000057],[-74.09908454899994,4.594919370000071],[-74.10320447299995,4.594661256000052],[-74.10707300599995,4.598243989000082],[-74.09912023899994,4.605019923000043],[-74.08319894699991,4.624698289000094],[-74.07882820899994,4.623891494000077],[-74.07282911699991,4.61541733200005]]]}},{"type":"Feature","properties":{"LocNombre":"SUMAPAZ","LocAAdmini":"Acuerdo 9 de 1986","LocArea":780968757.719,"LocCodigo":"20","SHAPE_Leng":1.91494941985,"SHAPE_Area":0.0635491267462},"geometry":{"type":"Polygon","coordinates":[[[-74.20761442799994,4.263597074000074],[-74.20196093999994,4.282826497000087],[-74.19496551999993,4.290119657000048],[-74.18822866599993,4.28293823100006],[-74.1854465799999,4.281933435000042],[-74.16269647699994,4.283142381000062],[-74.15795763499995,4.28534889000008],[-74.13747838199993,4.30424651800007],[-74.12439849899994,4.306656296000085],[-74.12733075799991,4.304396644000064],[-74.13387928399993,4.288170346000072],[-74.14179650099993,4.27872866000007],[-74.1437784439999,4.269402716000059],[-74.15263345499994,4.254702294000083],[-74.15095895199994,4.250272509000069],[-74.14550476199992,4.245008479000091],[-74.14268438899995,4.233725293000077],[-74.13608860999994,4.228660192000063],[-74.13894927299992,4.21482306300004],[-74.1364381649999,4.210838607000085],[-74.13587549599993,4.205344577000062],[-74.13349809199991,4.20468363000009],[-74.13103219899995,4.197744327000066],[-74.12446772599992,4.195392809000055],[-74.12578440199991,4.187081774000092],[-74.12354596499995,4.182276028000047],[-74.12147063399993,4.180513365000081],[-74.11569641999995,4.182566695000048],[-74.11052961199994,4.181313780000039],[-74.10918172899994,4.169519666000042],[-74.11271122099993,4.164249175000066],[-74.11243252299994,4.161487811000086],[-74.11481517399994,4.156623264000075],[-74.11440286099992,4.142711509000094],[-74.11783095699991,4.136319509000089],[-74.10559134599993,4.129831922000051],[-74.0994203109999,4.123551311000085],[-74.08967382299994,4.122565355000063],[-74.0960289599999,4.116891736000071],[-74.10083077399992,4.106443367000054],[-74.1081280649999,4.102518300000042],[-74.11821710399994,4.100307972000053],[-74.11954504399995,4.097975797000061],[-74.12708971599994,4.094785597000055],[-74.12973197899993,4.091839872000094],[-74.13258988199993,4.079295195000043],[-74.12605115299993,4.069225481000046],[-74.12472985799991,4.057093706000046],[-74.13279992999992,4.03530530800009],[-74.13744916199994,4.030930863000037],[-74.13791144899994,4.027407566000079],[-74.14312729699992,4.020651326000063],[-74.14681055599993,4.018312752000043],[-74.15026307999995,4.004775112000061],[-74.15264789999992,4.006545736000078],[-74.15405260799992,4.013654727000073],[-74.15889757999992,4.017718267000078],[-74.16922101199992,4.015327981000041],[-74.1755238099999,4.015975213000047],[-74.18288551699993,4.008260358000086],[-74.19484906699995,4.015784782000082],[-74.20115599699994,4.013508882000053],[-74.20479854699994,4.014208337000071],[-74.20973681099991,4.011495207000053],[-74.21380331699993,4.012963531000082],[-74.2175269629999,4.010278069000037],[-74.21780103799995,4.007519407000075],[-74.22946704999993,3.99377484200005],[-74.23320095199995,3.978201071000058],[-74.23767790999995,3.973233743000094],[-74.24420620099994,3.955410909000079],[-74.25117827499992,3.949718130000065],[-74.26005688499993,3.948662365000075],[-74.25394865299995,3.947006508000072],[-74.25300858399993,3.945476135000092],[-74.2577020089999,3.942666831000054],[-74.25647772299993,3.928669078000041],[-74.2648425669999,3.929441882000049],[-74.27332421599993,3.925296407000076],[-74.27607208599994,3.910552947000042],[-74.28656392799991,3.893807804000062],[-74.29621538799995,3.884543127000086],[-74.29786958799991,3.881080638000071],[-74.30675591499994,3.885108808000041],[-74.30967041199995,3.888501713000039],[-74.31628216299993,3.880320732000087],[-74.31359881399993,3.874141986000041],[-74.31462206399993,3.869559172000038],[-74.31330318499994,3.863983269000073],[-74.3092252159999,3.859662165000088],[-74.3050569209999,3.851243527000065],[-74.30812142299993,3.841684916000077],[-74.29970946199995,3.839107801000068],[-74.29501097299993,3.830565805000049],[-74.29668580499992,3.820368668000071],[-74.29896479099995,3.818604270000094],[-74.30730206699991,3.819101411000076],[-74.31831220399994,3.815341825000075],[-74.31995284899995,3.825428963000093],[-74.32828427399994,3.828000502000066],[-74.32982820399991,3.823537431000091],[-74.33342039699994,3.822314862000042],[-74.33979960699992,3.811751249000054],[-74.34390357599995,3.813855045000082],[-74.34967253299993,3.809262564000051],[-74.35521124099995,3.808285026000078],[-74.3535586289999,3.806072083000061],[-74.35392197699991,3.800679862000038],[-74.35881754099995,3.79798659100004],[-74.36465186799995,3.788291859000083],[-74.36888979399993,3.78950971200004],[-74.37309470499991,3.78725776400006],[-74.37588434199995,3.782379481000078],[-74.37517648999994,3.778913407000061],[-74.37659069799992,3.775565327000038],[-74.3807804139999,3.777206618000093],[-74.39280867499991,3.770792286000074],[-74.3864411749999,3.761699646000068],[-74.38582555499994,3.754432009000084],[-74.38917494999993,3.751304044000051],[-74.39365297099994,3.754565368000044],[-74.39780043899992,3.752798092000091],[-74.3970814349999,3.745521633000067],[-74.4007504519999,3.738265369000089],[-74.40533141799995,3.738206141000092],[-74.40806141799993,3.740658041000074],[-74.41602546899992,3.742289079000045],[-74.42334829399994,3.742658503000087],[-74.43729321599994,3.731030342000054],[-74.44628461499991,3.738160380000068],[-74.44963721399995,3.750452461000066],[-74.44351127999994,3.758218498000076],[-74.43991688499995,3.758596614000055],[-74.43754513599993,3.762398961000088],[-74.4329921989999,3.765236867000056],[-74.4332298679999,3.772491159000083],[-74.43171335799991,3.775864851000051],[-74.43274750299992,3.779821095000045],[-74.43010169099995,3.78561310300006],[-74.42377563899993,3.786613799000065],[-74.4205315449999,3.793232444000068],[-74.41717388799992,3.794636271000059],[-74.41338625799995,3.799733100000083],[-74.41428693899991,3.80126451600006],[-74.41304673199994,3.804698216000077],[-74.39616672499994,3.82473624000005],[-74.39259229499993,3.841093056000091],[-74.3911134569999,3.842272001000083],[-74.3904267389999,3.850991753000073],[-74.3869046989999,3.856411380000054],[-74.38604051199991,3.868663063000042],[-74.38357447099992,3.869476920000068],[-74.38281715399995,3.872900224000091],[-74.3753953829999,3.87667620700006],[-74.37335371099994,3.879772169000091],[-74.36801786199993,3.895623567000086],[-74.36397423599993,3.901815231000057],[-74.36354721999993,3.907929511000077],[-74.35982196899994,3.914039546000083],[-74.36075194299991,3.91774021000009],[-74.35488304199993,3.940989221000052],[-74.35673931399992,3.946953826000083],[-74.35700364999991,3.961217176000048],[-74.35562878999991,3.963942488000043],[-74.3567488079999,3.970331367000085],[-74.3635927119999,3.980493406000051],[-74.36971796099994,3.982597127000076],[-74.37451162799994,3.986780668000051],[-74.37112026299991,3.990729995000038],[-74.37042533199991,3.99522392700004],[-74.36409844399992,4.00493076500004],[-74.36289516499994,4.009454170000083],[-74.36481737899993,4.033132741000088],[-74.36659889799995,4.036231856000086],[-74.3616398499999,4.048152451000078],[-74.35527378699993,4.051974470000062],[-74.35111944499994,4.057683975000089],[-74.35092903799995,4.075200266000081],[-74.34517471899994,4.088369881000062],[-74.34504131699993,4.094156060000046],[-74.34203191499995,4.098945970000045],[-74.34302751899992,4.10135491300008],[-74.33958042799992,4.103262682000093],[-74.33084546599991,4.11964099100004],[-74.33004987499993,4.130883289000053],[-74.31917500399993,4.12571739200007],[-74.29994316599993,4.105602591000093],[-74.28015695399995,4.102057953000042],[-74.2733537499999,4.099125693000076],[-74.26394930299995,4.091240482000046],[-74.25849470799994,4.091722721000053],[-74.2519172609999,4.102076719000081],[-74.24580961899994,4.102874670000062],[-74.24642432099995,4.114160437000066],[-74.24287183599995,4.133664692000082],[-74.24562233599994,4.140868541000088],[-74.24296828099995,4.152606160000062],[-74.2429272569999,4.162798274000068],[-74.24005249299995,4.172722793000048],[-74.24124379599994,4.180993956000066],[-74.24021807999992,4.186464848000071],[-74.24467184199995,4.189326187000063],[-74.24450100999991,4.19491845500005],[-74.24253244099992,4.197928070000046],[-74.23740077399992,4.196457938000037],[-74.23146475599992,4.217282427000043],[-74.2281138159999,4.221995814000081],[-74.22449025299994,4.222268875000054],[-74.21956053199995,4.226488582000059],[-74.21875570299994,4.232929987000091],[-74.21620748899994,4.236970281000083],[-74.20629206699994,4.241893710000056],[-74.20886545399992,4.246589229000051],[-74.20501629899991,4.252933270000085],[-74.20761442799994,4.263597074000074]]]}},{"type":"Feature","properties":{"LocNombre":"USAQUEN","LocAAdmini":"Acuerdo 8 de 1977 y Res 1751 de 2016","LocArea":65201413.7656,"LocCodigo":"01","SHAPE_Leng":0.436906900722,"SHAPE_Area":0.00531045069206},"geometry":{"type":"Polygon","coordinates":[[[-74.0082358599999,4.664249064000046],[-74.01446,4.666415236000091],[-74.01357083199991,4.669450852000068],[-74.01897472599995,4.673849658000051],[-74.02394378199995,4.675839898000049],[-74.03050557799992,4.675580496000066],[-74.03144302899994,4.67733009300008],[-74.0483613859999,4.684975294000083],[-74.0572470319999,4.686836296000081],[-74.03359778599992,4.825841291000074],[-74.02981675699994,4.823158707000061],[-74.02408946999992,4.821926479000069],[-74.0056004889999,4.821690076000039],[-74.0035849759999,4.818559122000067],[-74.00495945199992,4.81026100400004],[-74.00040792699991,4.805567857000085],[-74.00128759099994,4.802466431000084],[-74.00607106599995,4.797358523000071],[-74.01279352699993,4.797900818000073],[-74.0143882719999,4.795148912000059],[-74.01655695799991,4.786456284000053],[-74.01571530399991,4.776038982000046],[-74.0183757339999,4.768095325000047],[-74.0159625899999,4.760361010000054],[-74.0127506739999,4.759651256000041],[-74.00893352799994,4.754952158000037],[-74.00974652899993,4.748040784000068],[-74.00716676799993,4.742340565000063],[-74.00843019599995,4.73256792300009],[-74.00670007699995,4.727379833000043],[-74.0091687819999,4.718652454000051],[-74.00691158099994,4.716530048000038],[-74.0099468219999,4.714726366000093],[-74.01268548099995,4.701042151000081],[-74.01482632699992,4.697251834000042],[-74.01134975499991,4.693937167000058],[-74.01252006099992,4.691700605000051],[-74.01117498999992,4.683303562000049],[-74.00363568599994,4.679510547000064],[-74.00199361199992,4.675269670000091],[-74.0082358599999,4.664249064000046]]]}},{"type":"Feature","properties":{"LocNombre":"CHAPINERO","LocAAdmini":"Acuerdo 8 de 1977 y Res 1751 de 2016","LocArea":38008914.9942,"LocCodigo":"02","SHAPE_Leng":0.333966156115,"SHAPE_Area":0.00309529269486},"geometry":{"type":"Polygon","coordinates":[[[-74.01116193799993,4.664585312000042],[-74.01716150899995,4.661951882000039],[-74.02530622799992,4.663124588000073],[-74.02559311699991,4.656782],[-74.02880917199991,4.654267015000073],[-74.02852844199992,4.648215193000055],[-74.03149876899994,4.64496605000005],[-74.02871845299995,4.643022295000037],[-74.00933971899991,4.638805237000042],[-74.01043513099995,4.630426323000052],[-74.0098091399999,4.626713953000092],[-74.00727329999995,4.625532657000065],[-73.98698119499994,4.630525640000087],[-73.98695980299993,4.627493541000092],[-73.9919538719999,4.621483476000037],[-73.99120851899994,4.617909480000037],[-73.9944570909999,4.614249512000072],[-74.00367045999991,4.616518168000084],[-74.0078216149999,4.615605203000086],[-74.0132022109999,4.618639302000076],[-74.01786571299994,4.614471188000039],[-74.0216494849999,4.613798747000089],[-74.02809027899991,4.617901705000065],[-74.03238474299991,4.615522531000067],[-74.03153829999991,4.617119262000074],[-74.03586698499993,4.617544562000091],[-74.03973223699995,4.613042699000061],[-74.04358056199993,4.612567038000066],[-74.04749422299994,4.61619139600009],[-74.0493762179999,4.621624386000065],[-74.06516516799991,4.625058274000082],[-74.06840721499992,4.628803970000092],[-74.0572470319999,4.686836296000081],[-74.0483613859999,4.684975294000083],[-74.03144302899994,4.67733009300008],[-74.03050557799992,4.675580496000066],[-74.02394378199995,4.675839898000049],[-74.01897472599995,4.673849658000051],[-74.01357083199991,4.669450852000068],[-74.01446,4.666415236000091],[-74.01116193799993,4.664585312000042]]]}},{"type":"Feature","properties":{"LocNombre":"SANTA FE","LocAAdmini":"Acuerdo 117 de 2003","LocArea":45170645.8674,"LocCodigo":"03","SHAPE_Leng":0.395051988811,"SHAPE_Area":0.00367825909078},"geometry":{"type":"Polygon","coordinates":[[[-73.99445708999991,4.614249513000061],[-73.99448511399993,4.609616891000087],[-73.99661395599992,4.606263449000039],[-73.9937398639999,4.600524035000092],[-73.99921433599991,4.592639528000063],[-74.00281970099991,4.592169825000042],[-74.00159682299994,4.589219315000094],[-74.00373825699995,4.587116543000093],[-74.00609176499995,4.578617336000093],[-74.00444555599995,4.573781101000066],[-74.00683914799993,4.565489238000055],[-74.00684546899993,4.55931077300005],[-74.01810400799991,4.56033225200008],[-74.02400151799992,4.555751886000053],[-74.02900209199993,4.558300133000046],[-74.02932285199995,4.562040486000058],[-74.0324871219999,4.567457774000047],[-74.03166724399995,4.570644927000046],[-74.03369925099992,4.572474986000088],[-74.03614077899994,4.571160746000089],[-74.0489484929999,4.573540845000082],[-74.0662124779999,4.58359678700009],[-74.0699977939999,4.576968624000074],[-74.07213339399993,4.577739272000088],[-74.07402813699991,4.576267392000091],[-74.08078624399991,4.58582233900006],[-74.0890048949999,4.591819547000057],[-74.07593364199994,4.60933736800007],[-74.06989208999994,4.621081909000054],[-74.06840721499992,4.628803970000092],[-74.06516516799991,4.625058274000082],[-74.0493762179999,4.621624386000065],[-74.04749422299994,4.61619139600009],[-74.04358056199993,4.612567038000066],[-74.03973223699995,4.613042699000061],[-74.03586698499993,4.617544562000091],[-74.03153829999991,4.617119262000074],[-74.03238474299991,4.615522531000067],[-74.02809027899991,4.617901705000065],[-74.0216494849999,4.613798747000089],[-74.01786571299994,4.614471188000039],[-74.0132022109999,4.618639302000076],[-74.0078216149999,4.615605203000086],[-74.00367045999991,4.616518168000084],[-73.99445708999991,4.614249513000061]],[[-74.06231439899994,4.603264548000084],[-74.07111195999994,4.600606528000071],[-74.0766983449999,4.602111298000068],[-74.08144463499991,4.594588259000091],[-74.0806263309999,4.591686388000085],[-74.0727783399999,4.588988083000061],[-74.0705791179999,4.59145656000004],[-74.06832146399995,4.589936039000065],[-74.06829015299991,4.593576145000043],[-74.06636874599991,4.597285101000068],[-74.0647117279999,4.597414685000047],[-74.06504770399994,4.599052695000069],[-74.0592526399999,4.601460293000059],[-74.06231439899994,4.603264548000084]]]}},{"type":"Feature","properties":{"LocNombre":"SAN CRISTOBAL","LocAAdmini":"Acuerdo 117 de 2003","LocArea":49098548.5272,"LocCodigo":"04","SHAPE_Leng":0.363689236893,"SHAPE_Area":0.00399787067027},"geometry":{"type":"Polygon","coordinates":[[[-74.02932285199995,4.562040486000058],[-74.02943159799992,4.547525023000048],[-74.03162791799991,4.544219990000045],[-74.03188804199993,4.539429680000069],[-74.0356409609999,4.535582171000044],[-74.03874648399994,4.527343897000094],[-74.04249282599994,4.510554146000061],[-74.05067092299993,4.511417280000046],[-74.0559679129999,4.508321126000055],[-74.06144743699991,4.511774495000054],[-74.06847783199993,4.509978415000091],[-74.07192909499992,4.515967404000094],[-74.06856875999995,4.528594621000082],[-74.07383654099993,4.529274953000083],[-74.0786996189999,4.527012624000065],[-74.07651524399995,4.531847443000061],[-74.07773913299991,4.532398166000064],[-74.07929051499991,4.530059053000059],[-74.07968950499992,4.532078899000055],[-74.08172543699993,4.530232329000057],[-74.08017384699991,4.526546042000064],[-74.08284936099994,4.527766568000061],[-74.08782035899992,4.520647734000079],[-74.08189181799992,4.517817601000047],[-74.09107069499993,4.519684044000087],[-74.08955516299994,4.51709568800004],[-74.09491345499993,4.517272346000084],[-74.0934248289999,4.523375814000076],[-74.09577664299991,4.537998435000077],[-74.0969985019999,4.539907842000048],[-74.09830605399992,4.539378921000093],[-74.09780717199993,4.541399984000066],[-74.09975033699993,4.544528640000067],[-74.10317934699992,4.546926963000089],[-74.10176154299995,4.555905401000075],[-74.10627167599995,4.563896818000046],[-74.09458245899992,4.575796995000076],[-74.0849308679999,4.589319823000039],[-74.07402813699991,4.576267392000091],[-74.07213339399993,4.577739272000088],[-74.0699977939999,4.576968624000074],[-74.0662124779999,4.58359678700009],[-74.0489484929999,4.573540845000082],[-74.03614077899994,4.571160746000089],[-74.03369925099992,4.572474986000088],[-74.03166724399995,4.570644927000046],[-74.0324871219999,4.567457774000047],[-74.02932285199995,4.562040486000058]]]}},{"type":"Feature","properties":{"LocNombre":"USME","LocAAdmini":"Acuerdo 15 de 1993","LocArea":215066686.644,"LocCodigo":"05","SHAPE_Leng":0.982969300218,"SHAPE_Area":0.0175082504698},"geometry":{"type":"Polygon","coordinates":[[[-74.0559679129999,4.508321126000055],[-74.05921030099995,4.497112746000084],[-74.06509777299993,4.486490672000059],[-74.06892525899991,4.486874880000073],[-74.07533746699994,4.484577727000044],[-74.07508238699995,4.469382096000061],[-74.07704241399995,4.465927238000063],[-74.0768847299999,4.461796286000038],[-74.07961708399995,4.461710329000084],[-74.08139867599994,4.458159970000054],[-74.08458336199993,4.456746409000061],[-74.09006663799994,4.459119229000066],[-74.09321758499993,4.456027443000039],[-74.10327917299992,4.452336375000073],[-74.10579174999992,4.44637498700007],[-74.10911379299995,4.443214351000051],[-74.11203771699991,4.435334327000078],[-74.1130589089999,4.416113576000043],[-74.11438926499994,4.413158629000066],[-74.11315202599991,4.409561468000049],[-74.11471646099994,4.406102580000038],[-74.11466754399993,4.397694830000091],[-74.1130764799999,4.394320924000056],[-74.11377475499995,4.386503221000055],[-74.11121868799995,4.38594127500005],[-74.10505266799993,4.378568355000084],[-74.09853666399994,4.378165463000073],[-74.09868050299991,4.37419079600005],[-74.09525825999992,4.369911316000071],[-74.09444982899993,4.364212375000079],[-74.09776119499992,4.35737485900006],[-74.09888893599992,4.344969725000055],[-74.10528164999994,4.336769950000075],[-74.10430151599991,4.332817803000069],[-74.1069567859999,4.325035022000066],[-74.1110459379999,4.323814021000089],[-74.11433296399991,4.31813601500005],[-74.11457218699991,4.313580370000068],[-74.12439849899994,4.306656296000085],[-74.13747838199993,4.30424651800007],[-74.16049117499995,4.28371577200005],[-74.1854465799999,4.281933435000042],[-74.18822866599993,4.28293823100006],[-74.19496551999993,4.290119657000048],[-74.20196093999994,4.282826497000087],[-74.20584488599991,4.269664100000057],[-74.21223634099994,4.273458158000039],[-74.21619204399991,4.273033614000042],[-74.21671666799995,4.276782131000061],[-74.22113714699992,4.282170224000083],[-74.21611995099994,4.286849246000088],[-74.21432156399993,4.303973173000088],[-74.21845357399991,4.327287237000064],[-74.21797886899992,4.335225342000058],[-74.21979825099993,4.340237061000039],[-74.22116997299992,4.36401740000008],[-74.21719836099993,4.366989219000061],[-74.21219898099991,4.374250895000046],[-74.2142128019999,4.376370232000056],[-74.21078272599993,4.382079954000062],[-74.21092453199992,4.386906730000078],[-74.19508979799991,4.387137357000086],[-74.18154627099995,4.383661868000047],[-74.17727112999995,4.388561009000057],[-74.16781127199994,4.385188135000078],[-74.1626926859999,4.389605548000077],[-74.15859132499992,4.39016214600008],[-74.1512122389999,4.387227567000082],[-74.14272377799995,4.387767188000055],[-74.14129075699992,4.39158722600007],[-74.14427158399991,4.402579002000039],[-74.1433105779999,4.408269244000053],[-74.1450441309999,4.415148197000065],[-74.14385192199995,4.432967541000039],[-74.14258376399994,4.434020396000051],[-74.14424010899995,4.448276537000083],[-74.13951190099993,4.458007456000075],[-74.13826052999991,4.465818780000063],[-74.13031252099995,4.476370672000087],[-74.12841856299991,4.475290974000075],[-74.1245282189999,4.479113451000046],[-74.12042521199993,4.49080361700004],[-74.12312109499993,4.491505504000088],[-74.12134919499994,4.492998250000085],[-74.12273896199991,4.49969886000008],[-74.12684511499992,4.501319849000083],[-74.12846497499993,4.504542031000085],[-74.1267373259999,4.506211804000088],[-74.1256103039999,4.520161511000083],[-74.1290023439999,4.52442646500009],[-74.12321327599994,4.527459055000065],[-74.12309045199993,4.529202478000059],[-74.12485451599991,4.544076122000092],[-74.12608585699991,4.544822994000072],[-74.12114808099994,4.545429557000091],[-74.11632893899991,4.540643765000084],[-74.11256749799992,4.540377108000087],[-74.1123824149999,4.541682810000054],[-74.0981482649999,4.534945819000086],[-74.10371321999992,4.545517970000049],[-74.10045471399991,4.545206937000046],[-74.09780717199993,4.541399984000066],[-74.09830605399992,4.539378921000093],[-74.0969985019999,4.539907842000048],[-74.09577664299991,4.537998435000077],[-74.0934248289999,4.523375814000076],[-74.0944649299999,4.516945999000086],[-74.08955516299994,4.51709568800004],[-74.09107069499993,4.519684044000087],[-74.08189181799992,4.517817601000047],[-74.08782035899992,4.520647734000079],[-74.08284936099994,4.527766568000061],[-74.08017384699991,4.526546042000064],[-74.08187531899995,4.529604665000079],[-74.07968950499992,4.532078899000055],[-74.0793383589999,4.530040246000056],[-74.0783759059999,4.532270570000094],[-74.0765134689999,4.531902534000039],[-74.07890824299994,4.52780693200009],[-74.0786996189999,4.527012624000065],[-74.06972891499993,4.529423614000052],[-74.06856341999992,4.528020993000041],[-74.07191009299993,4.51834720800008],[-74.0705007389999,4.51162541900004],[-74.06894865599992,4.511922219000041],[-74.06837699699992,4.509954120000089],[-74.06144743699991,4.511774495000054],[-74.0559679129999,4.508321126000055]]]}},{"type":"Feature","properties":{"LocNombre":"CIUDAD BOLIVAR","LocAAdmini":"Acuerdo 14 de 1983","LocArea":130002593.083,"LocCodigo":"19","SHAPE_Leng":0.702136253739,"SHAPE_Area":0.0105846022902},"geometry":{"type":"Polygon","coordinates":[[[-74.21092453199992,4.386906730000078],[-74.21296024299994,4.396163896000076],[-74.20777776499995,4.40526383100007],[-74.20818250499991,4.407892854000067],[-74.20407873599993,4.414444352000089],[-74.2034217129999,4.419375451000064],[-74.19884414199993,4.426413639000089],[-74.19423919199994,4.426767985000083],[-74.19474569599993,4.434774885000081],[-74.19090390699995,4.442700933000083],[-74.19051496599991,4.447214018000068],[-74.18621705099991,4.452728682000043],[-74.18645003499995,4.45845040800009],[-74.1830872999999,4.466782987000045],[-74.18257687199991,4.480007439000076],[-74.17803311799992,4.486409742000092],[-74.17877608999993,4.496511265000038],[-74.18152822299993,4.504104432000076],[-74.1733937699999,4.507847595000044],[-74.17617498399994,4.512512525000091],[-74.18222518699991,4.51296211500005],[-74.18324540399993,4.527466390000086],[-74.18810950499994,4.532805980000091],[-74.18395841899991,4.535668611000062],[-74.17736746399993,4.537388623000083],[-74.17322119399995,4.541053448000071],[-74.1763797779999,4.545790497000041],[-74.17376005599994,4.551589225000043],[-74.17706345499994,4.553866803000062],[-74.1763847499999,4.560490145000074],[-74.17851733799995,4.570167832000038],[-74.17559708499994,4.571698945000094],[-74.17529571499995,4.575390757000093],[-74.17784301799992,4.577742579000073],[-74.17938945999992,4.576976546000083],[-74.18379853699992,4.596403440000074],[-74.16331119799992,4.595717125000078],[-74.15216009999995,4.599758615000042],[-74.14969520999995,4.59571146400009],[-74.15177507099992,4.596398968000074],[-74.15418739699993,4.592856341000072],[-74.15205461799991,4.593044121000048],[-74.15138850199992,4.59140020600006],[-74.15425967099992,4.591257839000093],[-74.15695650499993,4.588703541000086],[-74.15332112399994,4.587904404000085],[-74.15306973899993,4.586379134000083],[-74.15175791799993,4.587417471000037],[-74.15264790099991,4.588696558000038],[-74.15049479699991,4.587985612000068],[-74.1521550569999,4.585407672000088],[-74.15059129799994,4.58452116400008],[-74.15111426999994,4.582574923000038],[-74.14842153299992,4.583309790000044],[-74.1472158599999,4.581947291000063],[-74.14931433599992,4.58145408900009],[-74.14999024299993,4.578326785000058],[-74.14705812599993,4.57649422500009],[-74.14744732499992,4.573743683000089],[-74.14650857899994,4.574795290000054],[-74.14483950499994,4.573010682000074],[-74.14261755599995,4.577316764000045],[-74.14096114599994,4.576074162000054],[-74.1431954759999,4.572617232000084],[-74.14046045499992,4.570469039000045],[-74.14170970799995,4.568845486000043],[-74.14046049399991,4.568326329000058],[-74.14044901199992,4.564958417000071],[-74.13387728499993,4.560712534000061],[-74.13398708499994,4.55746326600007],[-74.13525832199991,4.557141269000056],[-74.13319105199992,4.556218551000086],[-74.13224393899992,4.549917791000041],[-74.12709757499994,4.549616141000058],[-74.12536366799992,4.547505709000063],[-74.12630418099991,4.546122844000081],[-74.12693981599995,4.547216574000061],[-74.12998438299991,4.546175374000086],[-74.12490665599995,4.544215600000086],[-74.12306578899995,4.532337507000079],[-74.12321327599994,4.527459055000065],[-74.1290023439999,4.52442646500009],[-74.1256103039999,4.520161511000083],[-74.1267373259999,4.506211804000088],[-74.12846810499991,4.504572879000079],[-74.12684511499992,4.501319849000083],[-74.12273896199991,4.49969886000008],[-74.12134919499994,4.492998250000085],[-74.12312109499993,4.491505504000088],[-74.12042294199995,4.490887369000063],[-74.1245282189999,4.479113451000046],[-74.12841856299991,4.475290974000075],[-74.13031252099995,4.476370672000087],[-74.13826052999991,4.465818780000063],[-74.13951190099993,4.458007456000075],[-74.14424010899995,4.448276537000083],[-74.14258376399994,4.434020396000051],[-74.14385192199995,4.432967541000039],[-74.1450441309999,4.415148197000065],[-74.1433105779999,4.408269244000053],[-74.14426916499991,4.40256387800008],[-74.14112958399994,4.392087742000058],[-74.21092453199992,4.386906730000078]]]}}
+]};
+const REASENTA={
+  "01":2,"02":2,"03":5,"04":49,"05":16,"06":0,"07":0,"08":22,"09":0,"10":0,
+  "11":3,"12":0,"13":0,"14":0,"15":0,"16":0,"17":0,"18":8,"19":193,"20":0
+};
+/* Fuente: origen_destino.xlsx · Corte julio 2026 · Total=300 hogares
+   Ciudad Bolívar(19)=193 · San Cristóbal(04)=49 · Kennedy(08)=22
+   Usme(05)=16 · Rafael Uribe Uribe(18)=8 · Santa Fe(03)=5
+   Suba(11)=3 · Chapinero(02)=2 · Usaquén(01)=2 */
+
+function init(i){
+  if(i===1) initMeses();
+  if(i===9){initProj2026();setTimeout(initMapOrigen,200);}
+}
+
+function initMapOrigen(){
+  if(ci.map)return;ci.map=1;
+  const el=document.getElementById('mapOrigen');
+  if(!el)return;
+  const map=L.map(el,{zoomControl:false,attributionControl:false}).setView([4.65,-74.1],10);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{opacity:.4}).addTo(map);
+  const maxVal=Math.max(...Object.values(REASENTA).filter(v=>v>0));
+  L.geoJSON(GEOJSON_LOC,{
+    style:f=>{
+      const cod=f.properties.LocCodigo;
+      const v=REASENTA[cod]||0;
+      const alpha=v>0?0.2+0.7*(v/maxVal):0.05;
+      return{fillColor:v>0?"#7B0D1E":"#444",fillOpacity:alpha,color:v>0?"#C8952A":"#555",weight:v>0?1.5:0.5};
+    },
+    onEachFeature:(f,layer)=>{
+      const cod=f.properties.LocCodigo;
+      const v=REASENTA[cod]||0;
+      layer.bindTooltip("<b>"+f.properties.LocNombre+"</b><br>"+v+" hogares",{className:"map-tip",sticky:true});
+    }
+  }).addTo(map);
+}
+
+buildDots();goTo(0);
+</script>
+</body>
+</html>
