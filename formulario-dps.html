@@ -194,7 +194,7 @@
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(d)
     }).then(function (r) {
-      if (r.ok) { mostrar('Su información fue recibida.', 'ok'); frm.reset(); }
+      if (r.ok) { mostrar('Su información ha sido registrada con éxito.', 'ok'); frm.reset(); }
       else if (r.status === 409) { mostrar('Este NIT ya se encuentra registrado.', 'error'); }
       else { mostrar('No fue posible enviar. Verifique los datos.', 'error'); }
     }).catch(function () {
