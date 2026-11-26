@@ -1,0 +1,205 @@
+<!--
+  Formulario de registro de organizaciones.
+  Pegar en un widget "HTML" de Elementor (portal WordPress del DPS).
+  Reemplazar URL_DEL_FLUJO por la URL del disparador HTTP de Power Automate.
+-->
+<style>
+  .dps-form {
+    --ink: #1f2a37; --muted: #5b6675; --line: #d5dae1; --soft: #f5f7fa;
+    --navy: #2c3e50; --navy-hover: #233241;
+    --yellow: #ffcd00; --blue: #003893; --red: #ce1126;
+    font-family: "Montserrat", "Nunito Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink); max-width: 860px; margin: 0 auto; font-size: 16px; line-height: 1.5;
+  }
+  .dps-form *, .dps-form *::before, .dps-form *::after { box-sizing: border-box; }
+  .dps-form .flag { display: grid; grid-template-columns: 2fr 1fr 1fr; height: 4px; margin-bottom: 20px; }
+  .dps-form .flag span:nth-child(1) { background: var(--yellow); }
+  .dps-form .flag span:nth-child(2) { background: var(--blue); }
+  .dps-form .flag span:nth-child(3) { background: var(--red); }
+  .dps-form fieldset { border: 1px solid var(--line); border-radius: 16px; padding: 20px 24px 8px; margin: 0 0 20px; background: #fff; }
+  .dps-form legend { font-weight: 800; color: var(--navy); font-size: 1.1rem; padding: 0 8px; }
+  .dps-form .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+  .dps-form .full { grid-column: 1 / -1; }
+  .dps-form label { display: block; font-weight: 600; font-size: .92rem; margin-bottom: 16px; }
+  .dps-form input[type="text"], .dps-form input[type="email"], .dps-form input[type="tel"],
+  .dps-form input:not([type]), .dps-form select, .dps-form textarea {
+    display: block; width: 100%; min-height: 46px; margin-top: 6px; padding: 10px 14px;
+    font: inherit; font-weight: 400; color: #333; background: #fafafa;
+    border: 1px solid #ccc; border-radius: 8px;
+  }
+  .dps-form textarea { min-height: 110px; resize: vertical; }
+  .dps-form input:focus, .dps-form select:focus, .dps-form textarea:focus {
+    outline: 3px solid rgba(0, 56, 147, .25); border-color: var(--blue); background: #fff;
+  }
+  .dps-form select:disabled { background: #eee; color: #888; cursor: not-allowed; }
+  .dps-form .check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; }
+  .dps-form .check input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--navy); }
+  .dps-form .canales { display: flex; flex-wrap: wrap; gap: 4px 24px; margin: 0 0 12px 30px; }
+  .dps-form .canales .check { margin-bottom: 8px; }
+  .dps-form .hp { position: absolute; left: -9999px; }
+  .dps-form button[type="submit"] {
+    min-height: 48px; padding: .7rem 2rem; border: 2px solid transparent; border-radius: 999px;
+    background: var(--navy); color: #fff; font: inherit; font-weight: 700; cursor: pointer;
+    box-shadow: 0 6px 16px rgba(44, 62, 80, .25); transition: background .15s ease, transform .15s ease;
+  }
+  .dps-form button[type="submit"]:hover { background: var(--navy-hover); transform: translateY(-1px); }
+  .dps-form button[type="submit"]:disabled { opacity: .6; cursor: wait; transform: none; }
+  .dps-form #msg { margin: 14px 0 0; font-weight: 600; min-height: 1.5em; }
+  .dps-form #msg.ok { color: #1b6b3a; }
+  .dps-form #msg.error { color: var(--red); }
+  @media (max-width: 640px) {
+    .dps-form .grid { grid-template-columns: 1fr; }
+    .dps-form fieldset { padding: 16px 16px 4px; }
+  }
+</style>
+
+<div class="dps-form">
+  <div class="flag"><span></span><span></span><span></span></div>
+
+  <form id="frm" novalidate>
+    <fieldset>
+      <legend>Datos de la organización</legend>
+      <div class="grid">
+        <label>NIT (sin dígito de verificación)
+          <input name="nit" required pattern="[0-9]{8,10}" maxlength="10" inputmode="numeric"></label>
+        <label>Dígito de verificación
+          <input name="dv" required pattern="[0-9]" maxlength="1" inputmode="numeric"></label>
+        <label class="full">Razón social
+          <input name="razonSocial" required maxlength="200"></label>
+        <label>Tipo de organización
+          <select name="tipoOrganizacion" required>
+            <option value="">Seleccione</option>
+            <option>Empresa privada</option>
+            <option>ONG o fundación</option>
+            <option>Organismo de cooperación</option>
+            <option>Academia</option>
+            <option>Otro</option>
+          </select></label>
+        <label>Sitio web
+          <input name="sitioWeb" maxlength="200" placeholder="https://"></label>
+        <label class="full">Dirección
+          <input name="direccion" required maxlength="200"></label>
+        <label>Departamento
+          <select name="departamento" id="dpto" required><option value="">Cargando...</option></select></label>
+        <label>Municipio
+          <select name="municipio" id="mpio" required disabled><option value="">Seleccione un departamento</option></select></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Persona de contacto</legend>
+      <div class="grid">
+        <label class="full">Nombre completo
+          <input name="contactoNombre" required maxlength="150"></label>
+        <label>Cargo
+          <input name="contactoCargo" required maxlength="100"></label>
+        <label>Tipo de documento
+          <select name="contactoTipoDoc" required>
+            <option value="">Seleccione</option>
+            <option value="CC">Cédula de ciudadanía</option>
+            <option value="CE">Cédula de extranjería</option>
+            <option value="PA">Pasaporte</option>
+            <option value="PEP">Permiso especial de permanencia</option>
+            <option value="PPT">Permiso por protección temporal</option>
+          </select></label>
+        <label>Número de documento
+          <input name="contactoNumDoc" required pattern="[A-Za-z0-9]{5,15}" maxlength="15"></label>
+        <label>Teléfono de contacto
+          <input name="contactoTelefono" required type="tel" pattern="[0-9+ ]{7,15}" maxlength="15"></label>
+        <label class="full">Correo electrónico
+          <input name="contactoCorreo" required type="email" maxlength="120"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Autorizaciones</legend>
+      <label class="check">
+        <input type="checkbox" name="autoriza" required>
+        <span>Autorizo el tratamiento de mis datos personales conforme a la Ley 1581 de 2012 y a la política
+        de tratamiento de datos de la entidad. Declaro que cuento con facultad para suministrar los datos de la
+        organización y de la persona de contacto.</span>
+      </label>
+      <label class="check">
+        <input type="checkbox" name="autorizaContacto">
+        <span>Autorizo a la entidad a contactarme para comunicar información relacionada con este registro,
+        por los siguientes medios (opcional):</span>
+      </label>
+      <div class="canales">
+        <label class="check"><input type="checkbox" name="canal" value="Correo electrónico"> Correo electrónico</label>
+        <label class="check"><input type="checkbox" name="canal" value="Teléfono"> Llamada telefónica</label>
+        <label class="check"><input type="checkbox" name="canal" value="WhatsApp"> WhatsApp</label>
+        <label class="check"><input type="checkbox" name="canal" value="SMS"> Mensaje de texto</label>
+      </div>
+    </fieldset>
+
+    <input class="hp" name="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+    <button type="submit">Enviar</button>
+    <p id="msg" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<script>
+(function () {
+  var URL_FLUJO = 'URL_DEL_FLUJO';
+  var URL_MUNICIPIOS = 'https://www.datos.gov.co/resource/gdxc-w37w.json'
+    + '?$select=dpto,nom_mpio&$order=dpto,nom_mpio&$limit=2000'; // verificar nombres de campos
+
+  var frm = document.getElementById('frm');
+  var msg = document.getElementById('msg');
+  var dpto = document.getElementById('dpto');
+  var mpio = document.getElementById('mpio');
+
+  function mostrar(texto, clase) { msg.textContent = texto; msg.className = clase || ''; }
+
+  // Departamento y municipio dependientes
+  fetch(URL_MUNICIPIOS)
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (filas) {
+      var mapa = {};
+      filas.forEach(function (f) { (mapa[f.dpto] = mapa[f.dpto] || []).push(f.nom_mpio); }); // verificar campos
+      dpto.innerHTML = '<option value="">Seleccione</option>' +
+        Object.keys(mapa).sort(function (a, b) { return a.localeCompare(b, 'es'); })
+          .map(function (d) { return '<option>' + d + '</option>'; }).join('');
+      dpto.addEventListener('change', function () {
+        var lista = mapa[dpto.value] || [];
+        mpio.innerHTML = '<option value="">Seleccione</option>' +
+          lista.map(function (m) { return '<option>' + m + '</option>'; }).join('');
+        mpio.disabled = !lista.length;
+      });
+    })
+    .catch(function () {
+      // Plan B: campos de texto si la API no responde
+      dpto.outerHTML = '<input name="departamento" id="dpto" required maxlength="100">';
+      mpio.outerHTML = '<input name="municipio" id="mpio" required maxlength="100">';
+    });
+
+  frm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!frm.reportValidity()) return;
+    var btn = frm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    mostrar('Enviando...');
+
+    var d = Object.fromEntries(new FormData(frm));
+    delete d.canal;
+    d.autoriza = frm.autoriza.checked ? 'true' : 'false';
+    d.autorizaContacto = frm.autorizaContacto.checked ? 'true' : 'false';
+    d.canalesContacto = frm.autorizaContacto.checked
+      ? Array.prototype.map.call(frm.querySelectorAll('input[name="canal"]:checked'), function (c) { return c.value; }).join(', ')
+      : '';
+
+    fetch(URL_FLUJO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(d)
+    }).then(function (r) {
+      if (r.ok) { mostrar('Su información fue recibida.', 'ok'); frm.reset(); }
+      else if (r.status === 409) { mostrar('Este NIT ya se encuentra registrado.', 'error'); }
+      else { mostrar('No fue posible enviar. Verifique los datos.', 'error'); }
+    }).catch(function () {
+      mostrar('Error de conexión. Intente de nuevo.', 'error');
+    }).then(function () { btn.disabled = false; });
+  });
+})();
+</script>
